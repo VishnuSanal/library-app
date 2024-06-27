@@ -18,7 +18,7 @@ function App() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Library Management System</CardTitle>
+          <CardTitle>{screen}</CardTitle>
         </CardHeader>
         <CardContent>
 
@@ -31,7 +31,7 @@ function App() {
 
                     setScreen(item)
 
-                    switch (screen) {
+                    switch (item) {
                       case 'Books':
                         setTarget(['Import Books'])
                         break;
@@ -43,6 +43,7 @@ function App() {
                         break;
                       default:
                         setTarget(['Books', 'Issues', 'Members'])
+                        setScreen('Dashboard')
                     }
 
                   }}>
@@ -52,7 +53,6 @@ function App() {
                 </Card>
               )
           }
-
 
         </CardContent>
       </Card>
