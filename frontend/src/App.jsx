@@ -15,8 +15,8 @@ function App() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Panacea</CardTitle>
-          <CardDescription>Welcome to Library</CardDescription>
+          <CardTitle>Library Management System</CardTitle>
+          <CardDescription>Welcome!</CardDescription>
         </CardHeader>
         <CardContent>
 
@@ -25,14 +25,11 @@ function App() {
               <CardDescription>Import Books</CardDescription>
             </CardHeader>
             <CardContent>
-              {Fetch("")}
+              {Fetch('https://library-app-6cyw.onrender.com/api/v1/init/')}
             </CardContent>
           </Card>
 
         </CardContent>
-        <CardFooter>
-          <p>(C) Vishnu Sanal T</p>
-        </CardFooter>
       </Card>
 
     </>

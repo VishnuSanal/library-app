@@ -1,11 +1,13 @@
 import requests
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Resource, Api, fields, marshal_with, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, String, Integer, Float
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 db = SQLAlchemy(app)
@@ -79,18 +81,15 @@ class Books(Resource):
 
         return Book.query.all()
 
+
 class Init(Resource):
     def get(self):
-
         response = requests.get(f'https://frappe.io/api/method/frappe-library')
-
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        print(response.headers)
 
         if response.status_code != 200:
             abort(500, message="Book import failed")
 
-        return response.json()
+        return response.json()['message']
 
 
 api.add_resource(Books, '/api/v1/book/', '/api/v1/book/<string:isbn>')

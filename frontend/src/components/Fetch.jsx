@@ -13,48 +13,32 @@ const Fetch = (link) => {
 
   const [books, setBooks] = useState([]);
 
-  // http://127.0.0.1:5000/api/v1/init/
-
-  fetch('https://frappe.io/api/method/frappe-library')
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      console.log(data)
-      setBooks(data)
-    });
-
   useEffect(() => {
     fetch(link)
       .then((response) => {
-        console.log(response);
-        response.json();
+        return response.json();
       })
       .then((data) => {
-        console.log(data);
-        setBooks(data);
+        data.forEach(book => {
+          setBooks(data);
+        });
       })
       .catch((error) => {
         // reject(error);
       });
   }, []);
 
-  console.log(books);
-
   return (
-    <div>
-      {books.map((book) => (
-        <Card className="w-[350px]">
+    books.map(book =>
+      <div key={book.isbn}>
+        <Card>
           <CardHeader>
-            <CardTitle>{book.title}</CardTitle>
-            <CardDescription>
-              {book.authors}
-            </CardDescription>
+            <CardTitle>{book.authors}</CardTitle>
           </CardHeader>
-          <CardContent>{book}</CardContent>
+          <CardContent>{book.title}</CardContent>
         </Card>
-      ))}
-    </div>
+      </div>
+    )
   );
 };
 
