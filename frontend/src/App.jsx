@@ -1,9 +1,5 @@
 import './App.css'
 
-import { useNavigate } from "react-router-dom";
-
-import Books from './Books'
-
 import {
   Card,
   CardContent,
@@ -16,6 +12,7 @@ import { useEffect, useState } from 'react';
 function App() {
 
   let [target, setTarget] = useState(['Books', 'Issues', 'Members'])
+  let [screen, setScreen] = useState('Dashboard')
 
   return (
     <>
@@ -32,7 +29,9 @@ function App() {
                   key={item}
                   onClick={function () {
 
-                    switch (item) {
+                    setScreen(item)
+
+                    switch (screen) {
                       case 'Books':
                         setTarget(['Import Books'])
                         break;
@@ -53,6 +52,7 @@ function App() {
                 </Card>
               )
           }
+
 
         </CardContent>
       </Card>
