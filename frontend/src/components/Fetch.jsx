@@ -11,15 +11,18 @@ import { useState, useEffect } from "react";
 
 const Fetch = (link) => {
 
+  const [books, setBooks] = useState([]);
+
   // http://127.0.0.1:5000/api/v1/init/
 
   fetch('https://frappe.io/api/method/frappe-library')
     .then((response) => {
       return response.json();
     })
-    .then((data) => console.log(data));
-
-  const [books, setBooks] = useState([]);
+    .then((data) => {
+      console.log(data)
+      setBooks(data)
+    });
 
   useEffect(() => {
     fetch(link)

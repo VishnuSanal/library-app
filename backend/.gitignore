@@ -9,6 +9,8 @@ service_account_key.json
 runner.py
 run.py
 
+*_temp.*
+
 ### Flask ###
 instance/*
 !instance/.gitignore
