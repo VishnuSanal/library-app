@@ -70,11 +70,7 @@ class Books(Resource):
 
         book_data = response.json()['message'][0]
 
-        book = Book(bookID=book_data['bookID'], title=book_data['title'], authors=book_data['authors'],
-                    average_rating=book_data['average_rating'], isbn=book_data['isbn'], isbn13=book_data['isbn13'],
-                    language_code=book_data['language_code'], num_pages=book_data['  num_pages'],
-                    ratings_count=book_data['ratings_count'], text_reviews_count=book_data['text_reviews_count'],
-                    publication_date=book_data['publication_date'], publisher=book_data['publisher'])
+        book = Book.create_from_data(book_data)
 
         db.session.add(book)
         db.session.commit()
@@ -82,18 +78,44 @@ class Books(Resource):
         return Book.query.all()
 
 
-class Init(Resource):
-    def get(self):
-        response = requests.get(f'https://frappe.io/api/method/frappe-library')
+class Initialize(Resource):
+    @marshal_with(book_fields)
+    def get(self, count):
 
-        if response.status_code != 200:
-            abort(500, message="Book import failed")
+        if not count:
+            abort(409, message="Count ID required")
 
-        return response.json()['message']
+        page = 1
+
+        while count >= 0:
+            response = requests.get(f'https://frappe.io/api/method/frappe-library?page={page}')
+
+            if response.status_code != 200:
+                abort(500, message="Book import failed")
+
+            book_list = response.json()['message']
+
+            for book in book_list:
+                book = Book.create_from_data(book)
+
+                if Book.query.filter_by(isbn=book.isbn).first():
+                    continue
+
+                db.session.add(book)
+                db.session.commit()
+
+                count = count - 1
+
+                if count <= 0:
+                    return Book.query.all()
+
+            page = page + 1
+
+        return Book.query.all()
 
 
 api.add_resource(Books, '/api/v1/book/', '/api/v1/book/<string:isbn>')
-api.add_resource(Init, '/api/v1/init/')
+api.add_resource(Initialize, '/api/v1/init/<int:count>', '/api/v1/initialize/<int:count>')
 
 
 class Book(db.Model):
@@ -109,6 +131,15 @@ class Book(db.Model):
     text_reviews_count = Column(Integer)
     publication_date = Column(String(10))
     publisher = Column(String(255))
+
+    @staticmethod
+    def create_from_data(book_data):
+        print(type(book_data))
+        return Book(bookID=book_data['bookID'], title=book_data['title'], authors=book_data['authors'],
+                    average_rating=book_data['average_rating'], isbn=book_data['isbn'], isbn13=book_data['isbn13'],
+                    language_code=book_data['language_code'], num_pages=book_data['  num_pages'],
+                    ratings_count=book_data['ratings_count'], text_reviews_count=book_data['text_reviews_count'],
+                    publication_date=book_data['publication_date'], publisher=book_data['publisher'])
 
     def __repr__(self):
         return f"""
