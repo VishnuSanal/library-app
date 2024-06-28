@@ -24,14 +24,12 @@ import { useEffect, useState } from 'react';
 import { Button } from './components/ui/button';
 import { Label } from "./components/ui/label";
 import { Input } from "./components/ui/input";
-import { Checkbox } from "./components/ui/checkbox";
+import { List } from "lucide-react";
 
 function Books() {
 
   const [title, setTitle] = useState("Book List");
   const [books, setBooks] = useState([]);
-
-  const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
     fetch('https://library-app-6cyw.onrender.com/api/v1/book/')
@@ -51,13 +49,7 @@ function Books() {
   if (books.length > 0) {
     content = books.map(book =>
       <div key={book.isbn}>
-        <Card onClick={function (event) {
-          if (!selectedItems.some(e => e.bookID === book.bookID)) {
-            setSelectedItems(selectedItems => [...selectedItems, book])
-          } else {
-            setSelectedItems(selectedItems.filter(e => e.bookID !== book.bookID))
-          }
-        }}>
+        <Card>
           <CardHeader className="list-card">
             <CardTitle>{book.authors}</CardTitle>
             <CardDescription>{book.title}</CardDescription>
@@ -81,129 +73,130 @@ function Books() {
           <div>{content}</div>
         </CardContent>
         <CardFooter>
-          <div>
-            < SearchBooksDialog setTitle={setTitle} setBooks={setBooks} /> < ImportBooksDialog setTitle={setTitle} selectedItems={selectedItems} />
-          </div>
+          < SearchBooksDialog />
         </CardFooter>
       </Card>
     </>
   )
 }
 
-const ImportBooksDialog = ({ setTitle, selectedItems }) => {
+const SearchBooksDialog = () => {
 
   const [formValue, setFormValue] = useState({});
+  const [result, setResult] = useState([])
 
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" className="button">Import Books</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Search</DialogTitle>
-          <DialogDescription>
-            Enter the search keywords. Leave empty if not applicable
-          </DialogDescription>
-        </DialogHeader>
+  const [dialogContent, setDialogContent] = useState()
 
-        {/* {console.log(selectedItems)} */}
+  const onClick = () => {
 
-        <div>
+    let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
+
+    {
+      ['title', 'authors', 'isbn', 'publisher', 'page']
+        .map(value => {
+          if (formValue[value] !== undefined)
+            link += value + "=" + formValue[value] + "&"
+        }
+        )
+    }
+
+    {
+      fetch(link)
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          setResult(data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }
+
+  useEffect(() => {
+
+    if (result.length > 0) {
+      setDialogContent(
+        <div className="w-max-max">
+
+          <DialogContent className="flex flex-col h-screen overflow-scroll">
+
+            <DialogHeader>
+              <DialogTitle>Search</DialogTitle>
+            </DialogHeader>
+
+            <div>
+              {
+                result?.map(book =>
+                  <div key={book.isbn}>
+
+                    <Card className="list-card m-4">
+                      <CardHeader>
+                        <CardTitle>{book.authors}</CardTitle>
+                        <CardDescription>{book.title}</CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                  </div>
+                )
+              }
+            </div>
+
+            <DialogFooter> <Button type="submit" onClick={onClick}>Search</Button> </DialogFooter>
+
+          </DialogContent>
 
         </div>
+      )
+    } else {
+      setDialogContent(
+        <div className="grid gap-4 py-4">
+          <DialogContent className="flex flex-col">
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="submit" onClick={function (event) {
-              setTitle("Book List")
+            <DialogHeader>
+              <DialogTitle>Search</DialogTitle>
+            </DialogHeader>
+
+            <DialogDescription>Enter the search keywords. Leave empty if not applicable</DialogDescription>
+            {
+              ['Title', 'Authors', 'ISBN', 'Publisher', 'Page']
+                .map(currentItem =>
+                  <div className="grid grid-cols-4 items-center gap-4" key={currentItem}>
+                    <Label htmlFor={currentItem.toLowerCase()} className="text-right">
+                      {currentItem}
+                    </Label>
+                    <Input
+                      id={currentItem.toLowerCase()}
+                      defaultValue=""
+                      onChange={function (e) {
+                        setFormValue({ ...formValue, [currentItem.toLowerCase()]: e.target.value })
+                      }}
+                      className="col-span-3"
+                    />
+                  </div>
+                )
             }
-            }>
-              Submit
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
 
-  )
-}
+            <DialogFooter> <Button type="submit" onClick={onClick}>Search</Button> </DialogFooter>
 
-const SearchBooksDialog = ({ setTitle, setBooks }) => {
+          </DialogContent>
+        </div>
+      )
+    }
 
-  const [formValue, setFormValue] = useState({});
+  }, [result])
 
   return (
     <Dialog>
+
       <DialogTrigger asChild>
         <Button variant="ghost" className="button">Search Books</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Search</DialogTitle>
-          <DialogDescription>
-            Enter the search keywords. Leave empty if not applicable
-          </DialogDescription>
-        </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          {
-            ['Title', 'Authors', 'ISBN', 'Publisher', 'Page']
-              .map(currentItem =>
-                <div className="grid grid-cols-4 items-center gap-4" key={currentItem}>
-                  <Label htmlFor={currentItem.toLowerCase()} className="text-right">
-                    {currentItem}
-                  </Label>
-                  <Input
-                    id={currentItem.toLowerCase()}
-                    defaultValue=""
-                    onChange={function (e) {
-                      setFormValue({ ...formValue, [currentItem.toLowerCase()]: e.target.value })
-                    }}
-                    className="col-span-3"
-                  />
-                </div>
-              )
-          }
-        </div>
+      {dialogContent}
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="submit" onClick={function (event) {
-
-              let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
-
-              {
-                ['title', 'authors', 'isbn', 'publisher', 'page']
-                  .map(value => {
-                    if (formValue[value] !== undefined)
-                      link += value + "=" + formValue[value] + "&"
-                  }
-                  )
-              }
-
-              {
-                fetch(link)
-                  .then((response) => {
-                    return response.json();
-                  })
-                  .then((data) => {
-                    setTitle("Search Results")
-                    setBooks(data);
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                  });
-              }
-
-            }
-            }>
-              Search
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </Dialog >
 
   )
 }
