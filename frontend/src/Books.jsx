@@ -24,11 +24,8 @@ import { useEffect, useState } from 'react';
 import { Button } from './components/ui/button';
 import { Label } from "./components/ui/label";
 import { Input } from "./components/ui/input";
-import { List } from "lucide-react";
 
 function Books() {
-
-  const [title, setTitle] = useState("Book List");
   const [books, setBooks] = useState([]);
 
   useEffect(() => {
@@ -59,149 +56,48 @@ function Books() {
     )
   } else {
     content = <div>
-      <CardDescription>{title} Empty</CardDescription>
+      <CardDescription>Book List Empty</CardDescription>
     </div>
+  }
+
+  const [formValue, setFormValue] = useState({});
+
+  const [result, setResult] = useState([])
+
+  // const [uploadItems, setUploadItems] = useState([])
+
+  const onImportClick = () => {
+
+    uploadItems?.forEach((book) => {
+
+      fetch('https://library-app-6cyw.onrender.com/api/v1/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(book)
+      }).then(response => response.text())
+        .then(data => console.log(data))
+
+    })
+
+    setUploadItems([])
+    setResult([])
   }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <CardTitle>Book List</CardTitle>
         </CardHeader>
         <CardContent>
           <div>{content}</div>
         </CardContent>
-        <CardFooter>
-          < SearchBooksDialog />
-        </CardFooter>
-      </Card>
-    </>
-  )
-}
+        <CardFooter className="flex items-center justify-center w-full">
 
-const SearchBooksDialog = () => {
+          <Card className="p-8 ">
 
-  const [formValue, setFormValue] = useState({});
-
-  const [result, setResult] = useState([])
-
-  const [dialogContent, setDialogContent] = useState()
-
-  const [uploadItems, setUploadItems] = useState([])
-
-  const onClick = () => {
-
-    if (uploadItems.length == 0) {
-      let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
-
-      {
-        ['title', 'authors', 'isbn', 'publisher', 'page']
-          .map(value => {
-            if (formValue[value] !== undefined)
-              link += value + "=" + formValue[value] + "&"
-          }
-          )
-      }
-
-      {
-        fetch(link)
-          .then((response) => {
-            return response.json();
-          })
-          .then((data) => {
-            setResult(data);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-
-    } else {
-
-      uploadItems.forEach((book) => {
-
-        book['  num_pages'] = book.num_pages
-
-        fetch('https://library-app-6cyw.onrender.com/api/v1/book', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(book)
-        }).then(response => response.text())
-          .then(data => console.log(data))
-
-      })
-    }
-  }
-
-  useEffect(() => {
-
-    if (result.length > 0) {
-      setDialogContent(
-        <div className="w-max-max">
-
-          <DialogContent className="flex flex-col h-screen overflow-scroll w-max-max">
-
-            <DialogHeader>
-              <DialogTitle>Search</DialogTitle>
-            </DialogHeader>
-
-            <div>
-              {
-                result?.map(book =>
-                  <div key={book.isbn} className="w-max-max">
-
-                    <Card className="list-card m-4 w-max-max">
-                      <CardHeader>
-                        <CardTitle>{book.authors}</CardTitle>
-                        <CardDescription>{book.title}</CardDescription>
-
-                        <CardContent>
-
-                          <div class="flex justify-between items-center">
-
-                            <Label htmlFor="count" className="text-xl">Count:</Label>
-                            <Input id="count" defaultValue="0" onChange={function (e) {
-                              book.book_count = e.target.value
-
-                              setUploadItems(uploadItems => uploadItems.filter(b => b.bookID !== book.bookID))
-
-                              if (e.target.value != 0) {
-                                setUploadItems(uploadItems => [...uploadItems, book])
-                              }
-
-                            }} />
-
-                          </div>
-
-                        </CardContent>
-
-                      </CardHeader>
-                    </Card>
-
-                  </div>
-                )
-              }
-            </div>
-
-            <DialogFooter> <Button type="submit" onClick={onClick}>Import Selected</Button> </DialogFooter>
-
-          </DialogContent>
-
-        </div>
-      )
-    } else {
-      setDialogContent(
-        <div className="grid gap-4 py-4">
-          <DialogContent className="flex flex-col">
-
-            <DialogHeader>
-              <DialogTitle>Search</DialogTitle>
-            </DialogHeader>
-
-            <DialogDescription>Enter the search keywords. Leave empty if not applicable</DialogDescription>
             {
               ['Title', 'Authors', 'ISBN', 'Publisher', 'Page']
                 .map(currentItem =>
@@ -211,36 +107,100 @@ const SearchBooksDialog = () => {
                     </Label>
                     <Input
                       id={currentItem.toLowerCase()}
-                      defaultValue=""
+                      className="m-2 col-span-3"
                       onChange={function (e) {
                         setFormValue({ ...formValue, [currentItem.toLowerCase()]: e.target.value })
                       }}
-                      className="col-span-3"
                     />
                   </div>
                 )
             }
 
-            <DialogFooter> <Button type="submit" onClick={onClick}>Search</Button> </DialogFooter>
+            <Dialog className="m-20">
 
-          </DialogContent>
-        </div>
-      )
-    }
+              <DialogTrigger asChild className="w-full">
+                <Button type="submit" variant="ghost" className="w-full m-2" onClick={function () {
 
-  }, [result])
+                  let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
 
-  return (
-    <Dialog>
+                  {
+                    ['title', 'authors', 'isbn', 'publisher', 'page']
+                      .map(value => {
+                        if (formValue[value] !== undefined)
+                          link += value + "=" + formValue[value] + "&"
+                      }
+                      )
+                  }
 
-      <DialogTrigger asChild>
-        <Button variant="ghost" className="button">Search Books</Button>
-      </DialogTrigger>
+                  fetch(link)
+                    .then((response) => {
+                      return response.json();
+                    })
+                    .then((data) => {
+                      console.log(data)
+                      setResult(data);
+                    })
+                    .catch((error) => {
+                      console.log(error);
+                    });
 
-      {dialogContent}
+                }}>Search</Button>
+              </DialogTrigger>
 
-    </Dialog >
+              <DialogContent className="flex flex-col h-screen items-center overflow-scroll w-full">
 
+                <DialogHeader>
+                  <DialogTitle>Import</DialogTitle>
+                </DialogHeader>
+                {
+                  result.map(book =>
+                    <div key={book.isbn} className="w-full">
+
+                      <Card className="list-card m-4 w-full">
+                        <CardHeader>
+                          <CardTitle>{book.authors}</CardTitle>
+                          <CardDescription>{book.title}</CardDescription>
+
+                          <CardContent>
+
+                            <div class="flex justify-between items-center w-full">
+
+                              <Label htmlFor="count" className="text-xl">Count:</Label>
+                              <Input id="count" defaultValue="0" onChange={function (e) {
+                                book.book_count = e.target.value
+
+                                setUploadItems(uploadItems => uploadItems.filter(b => b.bookID !== book.bookID))
+
+                                if (e.target.value != 0) {
+                                  setUploadItems(uploadItems => [...uploadItems, book])
+                                }
+
+                              }} />
+
+                            </div>
+                          </CardContent>
+
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  )
+                }
+
+                <DialogClose>
+                  <DialogFooter>
+                    <Button type="submit" onClick={onImportClick}>Import Selected</Button>
+                  </DialogFooter>
+                </DialogClose>
+
+              </DialogContent>
+
+            </Dialog >
+
+          </Card>
+
+        </CardFooter>
+      </Card>
+    </>
   )
 }
 
