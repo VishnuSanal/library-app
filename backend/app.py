@@ -73,40 +73,32 @@ class Books(Resource):
         return Book.query.all()
 
 
-class Initialize(Resource):
+class FetchBookList(Resource):
     @marshal_with(Books.book_fields)
-    def get(self, count):
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('title', type=str, required=False, location='args', default='')
+        parser.add_argument('authors', type=str, required=False, location='args', default='')
+        parser.add_argument('isbn', type=str, required=False, location='args', default='')
+        parser.add_argument('publisher', type=str, required=False, location='args', default='')
+        parser.add_argument('page', type=str, required=False, location='args', default='')
 
-        if not count:
-            abort(409, message="Count ID required")
+        args = parser.parse_args()
 
-        page = 1
+        link = (f'https://frappe.io/api/method/frappe-library?'
+                f'&title={args['title']}'
+                f'&authors={args['authors']}'
+                f'&isbn={args['isbn']}'
+                f'&publisher={args['publisher']}'
+                f'&page={args['page']}'
+                )
 
-        while count >= 0:
-            response = requests.get(f'https://frappe.io/api/method/frappe-library?page={page}')
+        response = requests.get(link)
 
-            if response.status_code != 200:
-                abort(500, message="Book import failed")
+        if response.status_code != 200:
+            abort(500, message="Book import failed")
 
-            book_list = response.json()['message']
-
-            for book in book_list:
-                book = Book.create_from_data(book)
-
-                if Book.query.filter_by(isbn=book.isbn).first():
-                    continue
-
-                db.session.add(book)
-                db.session.commit()
-
-                count = count - 1
-
-                if count <= 0:
-                    return Book.query.all()
-
-            page = page + 1
-
-        return Book.query.all()
+        return response.json()['message']
 
 
 class Members(Resource):
@@ -133,7 +125,7 @@ class Members(Resource):
         return Member.query.all()
 
 
-api.add_resource(Books, '/api/v1/book/', '/api/v1/book/<string:isbn>')
-api.add_resource(Initialize, '/api/v1/init/<int:count>', '/api/v1/initialize/<int:count>')
+api.add_resource(Books, '/api/v1/book', '/api/v1/book/', '/api/v1/book/<string:isbn>')
+api.add_resource(FetchBookList, '/api/v1/fetch/', '/api/v1/fetch')
 
-api.add_resource(Members, '/api/v1/member/')
+api.add_resource(Members, '/api/v1/member', '/api/v1/member/')
