@@ -49,8 +49,8 @@ function Books() {
   if (books.length > 0) {
     content = books.map(book =>
       <div key={book.isbn}>
-        <Card>
-          <CardHeader className="list-card">
+        <Card className="list-card m-4">
+          <CardHeader>
             <CardTitle>{book.authors}</CardTitle>
             <CardDescription>{book.title}</CardDescription>
           </CardHeader>
@@ -83,34 +83,56 @@ function Books() {
 const SearchBooksDialog = () => {
 
   const [formValue, setFormValue] = useState({});
+
   const [result, setResult] = useState([])
 
   const [dialogContent, setDialogContent] = useState()
 
+  const [uploadItems, setUploadItems] = useState([])
+
   const onClick = () => {
 
-    let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
+    if (uploadItems.length == 0) {
+      let link = "https://library-app-6cyw.onrender.com/api/v1/fetch?"
 
-    {
-      ['title', 'authors', 'isbn', 'publisher', 'page']
-        .map(value => {
-          if (formValue[value] !== undefined)
-            link += value + "=" + formValue[value] + "&"
-        }
-        )
-    }
+      {
+        ['title', 'authors', 'isbn', 'publisher', 'page']
+          .map(value => {
+            if (formValue[value] !== undefined)
+              link += value + "=" + formValue[value] + "&"
+          }
+          )
+      }
 
-    {
-      fetch(link)
-        .then((response) => {
-          return response.json();
-        })
-        .then((data) => {
-          setResult(data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      {
+        fetch(link)
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            setResult(data);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+    } else {
+
+      uploadItems.forEach((book) => {
+
+        book['  num_pages'] = book.num_pages
+
+        fetch('https://library-app-6cyw.onrender.com/api/v1/book', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(book)
+        }).then(response => response.text())
+          .then(data => console.log(data))
+
+      })
     }
   }
 
@@ -120,7 +142,7 @@ const SearchBooksDialog = () => {
       setDialogContent(
         <div className="w-max-max">
 
-          <DialogContent className="flex flex-col h-screen overflow-scroll">
+          <DialogContent className="flex flex-col h-screen overflow-scroll w-max-max">
 
             <DialogHeader>
               <DialogTitle>Search</DialogTitle>
@@ -129,12 +151,33 @@ const SearchBooksDialog = () => {
             <div>
               {
                 result?.map(book =>
-                  <div key={book.isbn}>
+                  <div key={book.isbn} className="w-max-max">
 
-                    <Card className="list-card m-4">
+                    <Card className="list-card m-4 w-max-max">
                       <CardHeader>
                         <CardTitle>{book.authors}</CardTitle>
                         <CardDescription>{book.title}</CardDescription>
+
+                        <CardContent>
+
+                          <div class="flex justify-between items-center">
+
+                            <Label htmlFor="count" className="text-xl">Count:</Label>
+                            <Input id="count" defaultValue="0" onChange={function (e) {
+                              book.book_count = e.target.value
+
+                              setUploadItems(uploadItems => uploadItems.filter(b => b.bookID !== book.bookID))
+
+                              if (e.target.value != 0) {
+                                setUploadItems(uploadItems => [...uploadItems, book])
+                              }
+
+                            }} />
+
+                          </div>
+
+                        </CardContent>
+
                       </CardHeader>
                     </Card>
 
@@ -143,7 +186,7 @@ const SearchBooksDialog = () => {
               }
             </div>
 
-            <DialogFooter> <Button type="submit" onClick={onClick}>Search</Button> </DialogFooter>
+            <DialogFooter> <Button type="submit" onClick={onClick}>Import Selected</Button> </DialogFooter>
 
           </DialogContent>
 
