@@ -34,6 +34,7 @@ class Books(Resource):
         "text_reviews_count": fields.Integer,
         "publication_date": fields.String(10),
         "publisher": fields.String(255),
+        "book_count": fields.Integer
     }
 
     @marshal_with(book_fields)
@@ -51,21 +52,28 @@ class Books(Resource):
             return book
 
     @marshal_with(book_fields)
-    def post(self, isbn=None):
-        if not isbn:
-            abort(409, message="ISBN ID required")
+    def post(self):
 
-        if Book.query.filter_by(isbn=isbn).first():
-            return Book.query.all()
+        parser = reqparse.RequestParser()
+        parser.add_argument("bookID", help="bookID is required", type=str, required=True, trim=True)
+        parser.add_argument("title", help="title is required", type=str, required=True, trim=True)
+        parser.add_argument("authors", help="authors is required", type=str, required=True, trim=True)
+        parser.add_argument("average_rating", help="average_rating is required", type=str, required=True, trim=True)
+        parser.add_argument("isbn", help="isbn is required", type=str, required=True, trim=True)
+        parser.add_argument("isbn13", help="isbn13 is required", type=str, required=True, trim=True)
+        parser.add_argument("language_code", help="language_code is required", type=str, required=True, trim=True)
+        parser.add_argument("  num_pages", help="num_pages is required", type=str, required=True, trim=True)
+        parser.add_argument("ratings_count", help="ratings_count is required", type=str, required=True, trim=True)
+        parser.add_argument("text_reviews_count", help="text_reviews_count is required", type=str, required=True, trim=True)
+        parser.add_argument("publication_date", help="publication_date is required", type=str, required=True, trim=True)
+        parser.add_argument("publisher", help="publisher is required", type=str, required=True, trim=True)
+        parser.add_argument("book_count", help="book_count is required", type=str, required=False, trim=True)
+        args = parser.parse_args()
 
-        response = requests.get(f'https://frappe.io/api/method/frappe-library?isbn={isbn}')
+        book = Book.create_from_data(args)
 
-        if response.status_code != 200:
-            abort(500, message="Book import failed")
-
-        book_data = response.json()['message'][0]
-
-        book = Book.create_from_data(book_data)
+        if Book.query.filter_by(bookID=args['bookID']).first():
+            Book.query.filter_by(bookID=args['bookID']).delete()
 
         db.session.add(book)
         db.session.commit()
@@ -90,8 +98,7 @@ class FetchBookList(Resource):
                 f'&authors={args['authors']}'
                 f'&isbn={args['isbn']}'
                 f'&publisher={args['publisher']}'
-                f'&page={args['page']}'
-                )
+                f'&page={args['page']}')
 
         response = requests.get(link)
 

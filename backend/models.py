@@ -5,11 +5,11 @@ db = SQLAlchemy()
 
 
 class Book(db.Model):
-    bookID = Column(String(50))
+    bookID = Column(String(50), primary_key=True)
     title = Column(String(255))
     authors = Column(String(255))
     average_rating = Column(Float)
-    isbn = Column(String(13), primary_key=True)
+    isbn = Column(String(13))
     isbn13 = Column(String(13))
     language_code = Column(String(10))
     num_pages = Column(Integer)
