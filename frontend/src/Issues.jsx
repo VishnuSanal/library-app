@@ -32,7 +32,7 @@ function Issues() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Member List</CardTitle>
+          <CardTitle>Issue List</CardTitle>
         </CardHeader>
         <CardContent>
           {
