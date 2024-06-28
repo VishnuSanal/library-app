@@ -91,7 +91,7 @@ class FetchBookList(Resource):
 
         args = parser.parse_args()
 
-        link = f'https://frappe.io/api/method/frappe-library?title={args['title']}&authors={args['authors']}&isbn={args['isbn']}&publisher={args['publisher']}&page={args['page']}'
+        link = f"https://frappe.io/api/method/frappe-library?title={args['title']}&authors={args['authors']}&isbn={args['isbn']}&publisher={args['publisher']}&page={args['page']}"
 
         response = requests.get(link)
 
