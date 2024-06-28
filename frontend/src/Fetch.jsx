@@ -36,7 +36,6 @@ const Fetch = (link) => {
             <CardTitle>{book.authors}</CardTitle>
             <CardDescription>{book.title}</CardDescription>
           </CardHeader>
-          {/* <CardContent>{book.title}</CardContent> */}
         </Card>
       </div>
     )

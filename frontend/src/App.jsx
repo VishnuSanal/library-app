@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './App.css'
 
 import {
@@ -19,30 +20,34 @@ function App() {
             {
               ['Books', 'Issues', 'Members']
                 .map(item =>
-                  <Card className='card'
-                    key={item}
-                    onClick={function () {
-                      switch (item) {
-                        case 'Books':
-                          // setListEndpoint('https://library-app-6cyw.onrender.com/api/v1/book/')
-                          break;
-                        case 'Issues':
-                          break;
-                        case 'Members':
-                          break;
-                        default:
-                      }
-                    }}>
-                    <CardHeader>
-                      <CardTitle>{item}</CardTitle>
-                    </CardHeader>
-                  </Card>
+                  <Link to={item.toLowerCase()} key={item}>
+
+                    <Card className='card'
+                      onClick={
+                        function () {
+                          switch (item) {
+                            case 'Books':
+                              break;
+                            case 'Issues':
+                              break;
+                            case 'Members':
+                              break;
+                            default:
+                          }
+                        }
+                      }>
+
+                      <CardHeader>
+                        <CardTitle>{item}</CardTitle>
+                      </CardHeader>
+
+                    </Card>
+                  </Link>
                 )
             }
           </>
         </CardContent>
       </Card>
-
     </>
   )
 }
