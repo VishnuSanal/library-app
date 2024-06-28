@@ -42,8 +42,6 @@ class Books(Resource):
 
         if not isbn:
             books = Book.query.all()
-            if not books:
-                abort(404, message="Book list empty")
             return books
         else:
             book = Book.query.filter_by(isbn=isbn).first()
