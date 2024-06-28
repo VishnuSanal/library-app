@@ -24,9 +24,14 @@ class Book(db.Model):
     def create_from_data(book_data):
         book = Book(bookID=book_data['bookID'], title=book_data['title'], authors=book_data['authors'],
                     average_rating=book_data['average_rating'], isbn=book_data['isbn'], isbn13=book_data['isbn13'],
-                    language_code=book_data['language_code'], num_pages=book_data['  num_pages'],
-                    ratings_count=book_data['ratings_count'], text_reviews_count=book_data['text_reviews_count'],
+                    language_code=book_data['language_code'], ratings_count=book_data['ratings_count'],
+                    text_reviews_count=book_data['text_reviews_count'],
                     publication_date=book_data['publication_date'], publisher=book_data['publisher'])
+
+        if '  num_pages' in book_data:
+            book.num_pages = book_data['  num_pages']
+        elif 'num_pages' in book_data:
+            book.num_pages = book_data['num_pages']
 
         if 'book_count' in book_data:
             book.book_count = book_data['book_count']

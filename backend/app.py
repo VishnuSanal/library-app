@@ -60,12 +60,15 @@ class Books(Resource):
         parser.add_argument("isbn", help="isbn is required", type=str, required=True, trim=True)
         parser.add_argument("isbn13", help="isbn13 is required", type=str, required=True, trim=True)
         parser.add_argument("language_code", help="language_code is required", type=str, required=True, trim=True)
-        parser.add_argument("  num_pages", help="num_pages is required", type=str, required=True, trim=True)
         parser.add_argument("ratings_count", help="ratings_count is required", type=str, required=True, trim=True)
         parser.add_argument("text_reviews_count", help="text_reviews_count is required", type=str, required=True, trim=True)
         parser.add_argument("publication_date", help="publication_date is required", type=str, required=True, trim=True)
         parser.add_argument("publisher", help="publisher is required", type=str, required=True, trim=True)
         parser.add_argument("book_count", help="book_count is required", type=str, required=False, trim=True)
+
+        parser.add_argument("  num_pages", help="num_pages is required", type=str, required=False, trim=True)
+        parser.add_argument("num_pages", help="num_pages is required", type=str, required=False, trim=True)
+
         args = parser.parse_args()
 
         book = Book.create_from_data(args)
