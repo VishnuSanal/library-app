@@ -1,3 +1,5 @@
+import './App.css'
+
 import {
   Card,
   CardContent,
@@ -19,12 +21,10 @@ const Fetch = (link) => {
         return response.json();
       })
       .then((data) => {
-        data.forEach(book => {
-          setBooks(data);
-        });
+        setBooks(data);
       })
       .catch((error) => {
-        // reject(error);
+        console.log(error);
       });
   }, []);
 
@@ -32,10 +32,11 @@ const Fetch = (link) => {
     books.map(book =>
       <div key={book.isbn}>
         <Card>
-          <CardHeader>
+          <CardHeader className="card-sec">
             <CardTitle>{book.authors}</CardTitle>
+            <CardDescription>{book.title}</CardDescription>
           </CardHeader>
-          <CardContent>{book.title}</CardContent>
+          {/* <CardContent>{book.title}</CardContent> */}
         </Card>
       </div>
     )
