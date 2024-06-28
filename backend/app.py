@@ -1,16 +1,16 @@
 import requests
 from flask import Flask
 from flask_cors import CORS
-from flask_restful import Resource, Api, fields, marshal_with, abort
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, String, Integer, Float
+from flask_restful import Resource, Api, fields, marshal_with, abort, reqparse
+
+from models import Book, Member, db
 
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
-db = SQLAlchemy(app)
+db.init_app(app)
 
 
 @app.before_request
@@ -20,27 +20,22 @@ def create_tables():
     db.create_all()
 
 
-book_fields = {
-    "bookID": fields.String(50),
-    "title": fields.String(255),
-    "authors": fields.String(255),
-    "average_rating": fields.Float,
-    "isbn": fields.String(13),
-    "isbn13": fields.String(13),
-    "language_code": fields.String(10),
-    "num_pages": fields.Integer,
-    "ratings_count": fields.Integer,
-    "text_reviews_count": fields.Integer,
-    "publication_date": fields.String(10),
-    "publisher": fields.String(255),
-}
-
-
-# book_post_validator = reqparse.RequestParser()
-# book_post_validator.add_argument('isbn', help="ISBN is required to add book", required=True)
-
-
 class Books(Resource):
+    book_fields = {
+        "bookID": fields.String(50),
+        "title": fields.String(255),
+        "authors": fields.String(255),
+        "average_rating": fields.Float,
+        "isbn": fields.String(13),
+        "isbn13": fields.String(13),
+        "language_code": fields.String(10),
+        "num_pages": fields.Integer,
+        "ratings_count": fields.Integer,
+        "text_reviews_count": fields.Integer,
+        "publication_date": fields.String(10),
+        "publisher": fields.String(255),
+    }
+
     @marshal_with(book_fields)
     def get(self, isbn=None):
 
@@ -79,7 +74,7 @@ class Books(Resource):
 
 
 class Initialize(Resource):
-    @marshal_with(book_fields)
+    @marshal_with(Books.book_fields)
     def get(self, count):
 
         if not count:
@@ -114,45 +109,31 @@ class Initialize(Resource):
         return Book.query.all()
 
 
+class Members(Resource):
+    member_fields = {
+        "_id": fields.Integer,
+        "name": fields.String(50)
+    }
+
+    @marshal_with(member_fields)
+    def get(self):
+        return Member.query.all()
+
+    @marshal_with(member_fields)
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("name", type=str, required=True, trim=True, help="Name is required")
+        args = parser.parse_args()
+
+        member = Member(name=args.get('name'))
+
+        db.session.add(member)
+        db.session.commit()
+
+        return Member.query.all()
+
+
 api.add_resource(Books, '/api/v1/book/', '/api/v1/book/<string:isbn>')
 api.add_resource(Initialize, '/api/v1/init/<int:count>', '/api/v1/initialize/<int:count>')
 
-
-class Book(db.Model):
-    bookID = Column(String(50))
-    title = Column(String(255))
-    authors = Column(String(255))
-    average_rating = Column(Float)
-    isbn = Column(String(13), primary_key=True)
-    isbn13 = Column(String(13))
-    language_code = Column(String(10))
-    num_pages = Column(Integer)
-    ratings_count = Column(Integer)
-    text_reviews_count = Column(Integer)
-    publication_date = Column(String(10))
-    publisher = Column(String(255))
-
-    @staticmethod
-    def create_from_data(book_data):
-        print(type(book_data))
-        return Book(bookID=book_data['bookID'], title=book_data['title'], authors=book_data['authors'],
-                    average_rating=book_data['average_rating'], isbn=book_data['isbn'], isbn13=book_data['isbn13'],
-                    language_code=book_data['language_code'], num_pages=book_data['  num_pages'],
-                    ratings_count=book_data['ratings_count'], text_reviews_count=book_data['text_reviews_count'],
-                    publication_date=book_data['publication_date'], publisher=book_data['publisher'])
-
-    def __repr__(self):
-        return f"""
-        \"Book ID\" : \"{self.bookID}\",
-        \"Title\" : \"{self.title}\",
-        \"Authors\" : \"{self.authors}\",
-        \"Average Rating\" : \"{self.average_rating}\",
-        \"ISBN\" : \"{self.isbn}\",
-        \"ISBN-13\" : \"{self.isbn13}\",
-        \"Language Code\" : \"{self.language_code}\",
-        \"Number of Pages\" : \"{self.num_pages}\",
-        \"Ratings Count\" : \"{self.ratings_count}\",
-        \"Text Reviews Count\" : \"{self.text_reviews_count}\",
-        \"Publication Date\" : \"{self.publication_date}\",
-        \"Publisher\" : \"{self.publisher}\",
-        """
+api.add_resource(Members, '/api/v1/member/')
