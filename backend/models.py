@@ -61,6 +61,7 @@ class Member(db.Model):
     name = Column(String(50))
     books_issued = Column(MutableList.as_mutable(PickleType), default=[], nullable=True)
     issue_dates = Column(MutableList.as_mutable(PickleType), default=[], nullable=True)
+    amount_due = Column(Float, default=0)
 
     def __repr__(self):
         return f"""

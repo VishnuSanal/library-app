@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import dateutil
 import requests
 from flask import Flask
 from flask_cors import CORS
@@ -112,11 +113,25 @@ class Members(Resource):
         "name": fields.String(50),
         "books_issued": fields.List(fields.Integer),
         "issue_dates": fields.List(fields.String),
+        "amount_due": fields.Float,
     }
 
     @marshal_with(member_fields)
     def get(self):
-        return Member.query.all()
+        member_list = Member.query.all()
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for entry in member_list:
+            amount_due = 0
+
+            for date in entry.issue_dates:
+                issue_date = dateutil.parser.parse(date)
+                amount_due += (today - issue_date).days * 10
+
+            entry.amount_due = amount_due
+
+        return member_list
 
     @marshal_with(member_fields)
     def post(self):
@@ -129,7 +144,20 @@ class Members(Resource):
         db.session.add(member)
         db.session.commit()
 
-        return Member.query.all()
+        member_list = Member.query.all()
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for entry in member_list:
+            amount_due = 0
+
+            for date in entry.issue_dates:
+                issue_date = dateutil.parser.parse(date)
+                amount_due += (today - issue_date).days * 10
+
+            entry.amount_due = amount_due
+
+        return member_list
 
 
 class Issues(Resource):
@@ -138,6 +166,7 @@ class Issues(Resource):
         "name": fields.String(50),
         "books_issued": fields.List(fields.Integer),
         "issue_dates": fields.List(fields.String),
+        "amount_due": fields.Float,
     }
 
     @marshal_with(member_fields)
@@ -176,7 +205,20 @@ class Issues(Resource):
         member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
-        return Member.query.all()
+        member_list = Member.query.all()
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for entry in member_list:
+            amount_due = 0
+
+            for date in entry.issue_dates:
+                issue_date = dateutil.parser.parse(date)
+                amount_due += (today - issue_date).days * 10
+
+            entry.amount_due = amount_due
+
+        return member_list
 
     @marshal_with(member_fields)
     def delete(self):
@@ -214,7 +256,20 @@ class Issues(Resource):
         member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
-        return Member.query.all()
+        member_list = Member.query.all()
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for entry in member_list:
+            amount_due = 0
+
+            for date in entry.issue_dates:
+                issue_date = dateutil.parser.parse(date)
+                amount_due += (today - issue_date).days * 10
+
+            entry.amount_due = amount_due
+
+        return member_list
 
 
 api.add_resource(Books, '/api/v1/book', '/api/v1/book/', '/api/v1/book/<string:isbn>')
