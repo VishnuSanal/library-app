@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import dateutil
 import requests
 from flask import Flask
 from flask_cors import CORS
@@ -133,7 +136,8 @@ class Issues(Resource):
         "id": fields.Integer,
         "member_id": fields.Integer,
         "book_id": fields.Integer,
-        "issue_date": fields.String(10)
+        "issue_date": fields.String(10),
+        "amount_due": fields.Float()
     }
 
     @marshal_with(issue_fields)
@@ -144,9 +148,20 @@ class Issues(Resource):
         member_id = parser.parse_args()['member_id']
 
         if not member_id:
-            return Issue.query.all()
+            issues_list = Issue.query.all()
         else:
-            return Issue.query.filter_by(member_id=member_id)
+            issues_list = Issue.query.filter_by(member_id=member_id)
+
+        result_list = []
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for issue in issues_list:
+            issue_date = dateutil.parser.parse(issue.issue_date)
+            issue.amount_due = (today - issue_date).days * 10
+            result_list.append(issue)
+
+        return result_list
 
     @marshal_with(issue_fields)
     def post(self):

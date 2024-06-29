@@ -6,4 +6,4 @@ curl 127.0.0.1:5000/api/v1/book -X POST -H "Content-Type: application/json" --da
 
 curl 127.0.0.1:5000/api/v1/book && curl 127.0.0.1:5000/api/v1/member
 
-curl 127.0.0.1:5000/api/v1/issue -X POST -H "Content-Type: application/json" --data '{"member_id":1, "book_id":41909, "issue_date":"17/08/2002"}'
+curl 127.0.0.1:5000/api/v1/issue -X POST -H "Content-Type: application/json" --data '{"member_id":1, "book_id":41909, "issue_date":"26/05/2024"}'

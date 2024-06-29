@@ -71,3 +71,4 @@ class Issue(db.Model):
     member_id = Column(Integer, db.ForeignKey(Member.id))
     book_id = Column(Integer, db.ForeignKey(Book.bookID))
     issue_date = Column(String(10))
+    due_amount = Column(Float, default=0)
