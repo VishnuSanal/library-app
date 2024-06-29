@@ -101,7 +101,7 @@ function Books() {
                     )
                 }
 
-                sessionStorage.setItem('books_search_link', link)
+                sessionStorage.setItem('books_search_link', new URL(link).href)
 
               }}>Search</Button>
 
