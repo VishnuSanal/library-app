@@ -41,16 +41,8 @@ class Books(Resource):
     }
 
     @marshal_with(book_fields)
-    def get(self, isbn=None):
-
-        if not isbn:
-            books = Book.query.all()
-            return books
-        else:
-            book = Book.query.filter_by(isbn=isbn).first()
-            if not book:
-                abort(404, message="Book not found")
-            return book
+    def get(self):
+        return Book.query.all()
 
     @marshal_with(book_fields)
     def post(self):
@@ -80,6 +72,18 @@ class Books(Resource):
             Book.query.filter_by(bookID=args['bookID']).delete()
 
         db.session.add(book)
+        db.session.commit()
+
+        return Book.query.all()
+
+    @marshal_with(book_fields)
+    def delete(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("bookID", type=str, required=True, location='args', trim=True, help="bookID is required")
+        args = parser.parse_args()
+
+        Book.query.filter_by(bookID=args['bookID']).delete()
+
         db.session.commit()
 
         return Book.query.all()
@@ -142,6 +146,31 @@ class Members(Resource):
         member = Member(name=args.get('name'))
 
         db.session.add(member)
+        db.session.commit()
+
+        member_list = Member.query.all()
+
+        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+        for entry in member_list:
+            amount_due = 0
+
+            for date in entry.issue_dates:
+                issue_date = dateutil.parser.parse(date)
+                amount_due += (today - issue_date).days * 10
+
+            entry.amount_due = amount_due
+
+        return member_list
+
+    @marshal_with(member_fields)
+    def delete(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("id", type=str, required=True, location='args', trim=True, help="id is required")
+        args = parser.parse_args()
+
+        Member.query.filter_by(id=args['id']).delete()
+
         db.session.commit()
 
         member_list = Member.query.all()
@@ -272,7 +301,7 @@ class Issues(Resource):
         return member_list
 
 
-api.add_resource(Books, '/api/v1/book', '/api/v1/book/', '/api/v1/book/<string:isbn>')
+api.add_resource(Books, '/api/v1/book', '/api/v1/book/')
 api.add_resource(FetchBookList, '/api/v1/fetch/', '/api/v1/fetch')
 
 api.add_resource(Members, '/api/v1/member', '/api/v1/member/')
