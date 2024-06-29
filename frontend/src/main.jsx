@@ -6,6 +6,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Books from './Books.jsx';
 import Members from './Members.jsx';
 import Issues from './Issues.jsx';
+import Search from './Search.jsx';
 
 const router = createBrowserRouter([
   {
@@ -17,9 +18,15 @@ const router = createBrowserRouter([
     element: < Books />,
   },
   {
+    path: "/books/search",
+    element: < Search />,
+  },
+
+  {
     path: "members",
     element: < Members />,
   },
+
   {
     path: "issues",
     element: < Issues />,

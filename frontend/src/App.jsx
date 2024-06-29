@@ -22,21 +22,7 @@ function App() {
                 .map(item =>
                   <Link to={item.toLowerCase()} key={item}>
 
-                    <Card className='card'
-                      onClick={
-                        function () {
-                          switch (item) {
-                            case 'Books':
-                              break;
-                            case 'Issues':
-                              break;
-                            case 'Members':
-                              break;
-                            default:
-                          }
-                        }
-                      }>
-
+                    <Card className='card'>
                       <CardHeader>
                         <CardTitle>{item}</CardTitle>
                       </CardHeader>
