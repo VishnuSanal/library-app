@@ -156,13 +156,15 @@ class Issues(Resource):
         parser.add_argument("issue_date", type=str, required=True, trim=True, help="issue_date is required")
         args = parser.parse_args()
 
-        if not Book.query.filter_by(bookID=args['book_id']).first():
-            abort(404, message="No such book")
-        else:
-            db.session.
-
         if not Member.query.filter_by(id=args['member_id']).first():
             abort(404, message="No such member")
+
+        book_entry = Book.query.filter_by(bookID=args['book_id'])
+        # TODO: check zero count
+        if not book_entry.first():
+            abort(404, message="No such book")
+        else:
+            book_entry.update({'book_count': book_entry.first().book_count - 1})
 
         issue = Issue(member_id=args.get('member_id'), book_id=args.get('book_id'), issue_date=args.get('issue_date'))
 
