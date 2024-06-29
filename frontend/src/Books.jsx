@@ -35,16 +35,20 @@ function Books() {
 
   if (books.length > 0) {
     content = books.map(book =>
-      <div key={book.isbn}>
-        <Card className="list-card m-4">
-          <CardHeader>
-            <CardTitle>{book.authors}</CardTitle>
-            <CardDescription>{book.title}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            Stock Left: {book.book_count}
-          </CardContent>
-        </Card>
+      <div key={book.bookID}>
+        <Link to="new_issue" >
+          <Card className="list-card m-4" onClick={() => {
+            sessionStorage.setItem('new_issue_item', JSON.stringify(book))
+          }}>
+            <CardHeader>
+              <CardTitle>{book.title}</CardTitle>
+              <CardDescription>{book.authors}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              Stock Left: {book.book_count}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     )
   } else {
@@ -67,7 +71,6 @@ function Books() {
         <CardFooter className="flex items-center justify-center w-full">
 
           <Card className="p-8 ">
-
             {
               ['Title', 'Authors', 'ISBN', 'Publisher', 'Page']
                 .map(currentItem =>

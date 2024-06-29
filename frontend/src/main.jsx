@@ -7,6 +7,7 @@ import Books from './Books.jsx';
 import Members from './Members.jsx';
 import Issues from './Issues.jsx';
 import Search from './Search.jsx';
+import NewIssue from './NewIssue.jsx';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: "/books/search",
     element: < Search />,
+  },
+  {
+    path: "/books/new_issue",
+    element: < NewIssue />,
   },
 
   {

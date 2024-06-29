@@ -158,6 +158,8 @@ class Issues(Resource):
 
         if not Book.query.filter_by(bookID=args['book_id']).first():
             abort(404, message="No such book")
+        else:
+            db.session.
 
         if not Member.query.filter_by(id=args['member_id']).first():
             abort(404, message="No such member")

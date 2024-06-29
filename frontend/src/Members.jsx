@@ -109,10 +109,10 @@ const NewMemberDialog = () => {
       <DialogContent className="flex flex-col">
 
         <DialogHeader>
-          <DialogTitle>Search</DialogTitle>
+          <DialogTitle>New Member</DialogTitle>
         </DialogHeader>
 
-        <DialogDescription>Enter the search keywords. Leave empty if not applicable</DialogDescription>
+        <DialogDescription>Enter Member Details</DialogDescription>
         {
           ['Name']
             .map(currentItem =>

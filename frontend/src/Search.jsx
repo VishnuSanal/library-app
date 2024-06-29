@@ -40,11 +40,11 @@ function Search() {
 
   if (books.length > 0) {
     content = books.map(book =>
-      <div key={book.isbn}>
+      <div key={book.bookID}>
         <Card className="list-card m-4">
           <CardHeader>
-            <CardTitle>{book.authors}</CardTitle>
-            <CardDescription>{book.title}</CardDescription>
+            <CardTitle>{book.title}</CardTitle>
+            <CardDescription>{book.authors}</CardDescription>
           </CardHeader>
 
           <CardContent>
