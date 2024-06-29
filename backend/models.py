@@ -60,6 +60,7 @@ class Member(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50))
     books_issued = Column(MutableList.as_mutable(PickleType), default=[], nullable=True)
+    issue_dates = Column(MutableList.as_mutable(PickleType), default=[], nullable=True)
 
     def __repr__(self):
         return f"""

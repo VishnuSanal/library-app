@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import requests
 from flask import Flask
 from flask_cors import CORS
@@ -109,6 +111,7 @@ class Members(Resource):
         "id": fields.Integer,
         "name": fields.String(50),
         "books_issued": fields.List(fields.Integer),
+        "issue_dates": fields.List(fields.String),
     }
 
     @marshal_with(member_fields)
@@ -134,6 +137,7 @@ class Issues(Resource):
         "id": fields.Integer,
         "name": fields.String(50),
         "books_issued": fields.List(fields.Integer),
+        "issue_dates": fields.List(fields.String),
     }
 
     @marshal_with(member_fields)
@@ -141,29 +145,35 @@ class Issues(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("member_id", type=int, required=True, trim=True, help="member_id is required")
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
-        parser.add_argument("issue_date", type=str, required=True, trim=True, help="issue_date is required")
         args = parser.parse_args()
 
         member_entry = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        if book_entry.first():
-            book_entry.update({'book_count': book_entry.first().book_count - 1})
+        member = member_entry.first()
+        book = book_entry.first()
+
+        if not member:
+            abort(404, message="No such member")
+
+        if book:
+            book_entry.update({'book_count': book.book_count + 1})
         else:
             abort(404, message="No such book")
 
-        books_issued = member_entry.first().books_issued
-
+        books_issued = member.books_issued
         if books_issued is None:
             books_issued = []
+        elif book.bookID in books_issued:
+            abort(400, message="Book already issued to member")
+        books_issued.append(book.bookID)
 
-        books_issued.append(book_entry.first().bookID)
+        issue_dates = member.issue_dates
+        if issue_dates is None:
+            issue_dates = []
+        issue_dates.append(datetime.today().strftime('%d/%m/%Y'))
 
-        if member_entry.first():
-            member_entry.update(({'books_issued': books_issued}))
-        else:
-            abort(404, message="No such member")
-
+        member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         return Member.query.all()
@@ -173,29 +183,35 @@ class Issues(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("member_id", type=int, required=True, trim=True, help="member_id is required")
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
-        parser.add_argument("issue_date", type=str, required=False, trim=True, help="issue_date is required")
         args = parser.parse_args()
 
         member_entry = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        if book_entry.first():
-            book_entry.update({'book_count': book_entry.first().book_count + 1})
+        member = member_entry.first()
+        book = book_entry.first()
+
+        if not member:
+            abort(404, message="No such member")
+
+        if book:
+            book_entry.update({'book_count': book.book_count + 1})
         else:
             abort(404, message="No such book")
 
-        books_issued = member_entry.first().books_issued
-
-        if books_issued is None:
+        books_issued = member.books_issued
+        if not books_issued or book.bookID not in books_issued:
             abort(400, message="No such book issued to member")
 
-        books_issued.remove(book_entry.first().bookID)
+        idx = books_issued.index(book.bookID)
+        books_issued.remove(book.bookID)
 
-        if member_entry.first():
-            member_entry.update(({'books_issued': books_issued}))
-        else:
-            abort(404, message="No such member")
+        issue_dates = member.issue_dates
+        if not issue_dates:
+            abort(400, message="No such book issued to member")
+        issue_dates.pop(idx)
 
+        member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         return Member.query.all()
