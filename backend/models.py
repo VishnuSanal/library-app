@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, String, Integer, Float
+from sqlalchemy import Column, String, Integer, Float, PickleType
+from sqlalchemy.ext.mutable import MutableList
 
 db = SQLAlchemy()
 
@@ -58,17 +59,11 @@ class Book(db.Model):
 class Member(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50))
+    books_issued = Column(MutableList.as_mutable(PickleType), default=[], nullable=True)
 
     def __repr__(self):
         return f"""
         \"ID\" : \"{self.id}\",
         \"name\" : \"{self.name}\",
+        \"books_issued\" : \"{self.books_issued}\",
         """
-
-
-class Issue(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    member_id = Column(Integer, db.ForeignKey(Member.id))
-    book_id = Column(Integer, db.ForeignKey(Book.bookID))
-    issue_date = Column(String(10))
-    due_amount = Column(Float, default=0)

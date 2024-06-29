@@ -1,12 +1,9 @@
-from datetime import datetime
-
-import dateutil
 import requests
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Resource, Api, fields, marshal_with, abort, reqparse
 
-from models import Book, Member, db, Issue
+from models import Book, Member, db
 
 app = Flask(__name__)
 api = Api(app)
@@ -110,7 +107,8 @@ class FetchBookList(Resource):
 class Members(Resource):
     member_fields = {
         "id": fields.Integer,
-        "name": fields.String(50)
+        "name": fields.String(50),
+        "books_issued": fields.List(fields.Integer),
     }
 
     @marshal_with(member_fields)
@@ -132,38 +130,13 @@ class Members(Resource):
 
 
 class Issues(Resource):
-    issue_fields = {
+    member_fields = {
         "id": fields.Integer,
-        "member_id": fields.Integer,
-        "book_id": fields.Integer,
-        "issue_date": fields.String(10),
-        "amount_due": fields.Float()
+        "name": fields.String(50),
+        "books_issued": fields.List(fields.Integer),
     }
 
-    @marshal_with(issue_fields)
-    def get(self):
-
-        parser = reqparse.RequestParser()
-        parser.add_argument("member_id", type=int, required=False, trim=True, location='args', )
-        member_id = parser.parse_args()['member_id']
-
-        if not member_id:
-            issues_list = Issue.query.all()
-        else:
-            issues_list = Issue.query.filter_by(member_id=member_id)
-
-        result_list = []
-
-        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
-
-        for issue in issues_list:
-            issue_date = dateutil.parser.parse(issue.issue_date)
-            issue.amount_due = (today - issue_date).days * 10
-            result_list.append(issue)
-
-        return result_list
-
-    @marshal_with(issue_fields)
+    @marshal_with(member_fields)
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("member_id", type=int, required=True, trim=True, help="member_id is required")
@@ -171,22 +144,61 @@ class Issues(Resource):
         parser.add_argument("issue_date", type=str, required=True, trim=True, help="issue_date is required")
         args = parser.parse_args()
 
-        if not Member.query.filter_by(id=args['member_id']).first():
+        member_entry = Member.query.filter_by(id=args['member_id'])
+        book_entry = Book.query.filter_by(bookID=args['book_id'])
+
+        if book_entry.first():
+            book_entry.update({'book_count': book_entry.first().book_count - 1})
+        else:
+            abort(404, message="No such book")
+
+        books_issued = member_entry.first().books_issued
+
+        if books_issued is None:
+            books_issued = []
+
+        books_issued.append(book_entry.first().bookID)
+
+        if member_entry.first():
+            member_entry.update(({'books_issued': books_issued}))
+        else:
             abort(404, message="No such member")
 
-        book_entry = Book.query.filter_by(bookID=args['book_id'])
-        # TODO: check zero count
-        if not book_entry.first():
-            abort(404, message="No such book")
-        else:
-            book_entry.update({'book_count': book_entry.first().book_count - 1})
-
-        issue = Issue(member_id=args.get('member_id'), book_id=args.get('book_id'), issue_date=args.get('issue_date'))
-
-        db.session.add(issue)
         db.session.commit()
 
-        return Issue.query.all()
+        return Member.query.all()
+
+    @marshal_with(member_fields)
+    def delete(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("member_id", type=int, required=True, trim=True, help="member_id is required")
+        parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
+        parser.add_argument("issue_date", type=str, required=False, trim=True, help="issue_date is required")
+        args = parser.parse_args()
+
+        member_entry = Member.query.filter_by(id=args['member_id'])
+        book_entry = Book.query.filter_by(bookID=args['book_id'])
+
+        if book_entry.first():
+            book_entry.update({'book_count': book_entry.first().book_count + 1})
+        else:
+            abort(404, message="No such book")
+
+        books_issued = member_entry.first().books_issued
+
+        if books_issued is None:
+            abort(400, message="No such book issued to member")
+
+        books_issued.remove(book_entry.first().bookID)
+
+        if member_entry.first():
+            member_entry.update(({'books_issued': books_issued}))
+        else:
+            abort(404, message="No such member")
+
+        db.session.commit()
+
+        return Member.query.all()
 
 
 api.add_resource(Books, '/api/v1/book', '/api/v1/book/', '/api/v1/book/<string:isbn>')
