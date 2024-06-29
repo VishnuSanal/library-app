@@ -97,7 +97,7 @@ class FetchBookList(Resource):
         parser.add_argument('authors', type=str, required=False, location='args', default='')
         parser.add_argument('isbn', type=str, required=False, location='args', default='')
         parser.add_argument('publisher', type=str, required=False, location='args', default='')
-        parser.add_argument('page', type=str, required=False, location='args', default='')
+        parser.add_argument('page', type=str, required=False, location='args', default='1')
 
         args = parser.parse_args()
 
