@@ -56,11 +56,18 @@ class Book(db.Model):
 
 
 class Member(db.Model):
-    _id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50))
 
     def __repr__(self):
         return f"""
-        \"ID\" : \"{self._id}\",
+        \"ID\" : \"{self.id}\",
         \"name\" : \"{self.name}\",
         """
+
+
+class Issue(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    member_id = Column(Integer, db.ForeignKey(Member.id))
+    book_id = Column(Integer, db.ForeignKey(Book.bookID))
+    issue_date = Column(String(10))

@@ -3,7 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_restful import Resource, Api, fields, marshal_with, abort, reqparse
 
-from models import Book, Member, db
+from models import Book, Member, db, Issue
 
 app = Flask(__name__)
 api = Api(app)
@@ -106,7 +106,7 @@ class FetchBookList(Resource):
 
 class Members(Resource):
     member_fields = {
-        "_id": fields.Integer,
+        "id": fields.Integer,
         "name": fields.String(50)
     }
 
@@ -128,7 +128,51 @@ class Members(Resource):
         return Member.query.all()
 
 
+class Issues(Resource):
+    issue_fields = {
+        "id": fields.Integer,
+        "member_id": fields.Integer,
+        "book_id": fields.Integer,
+        "issue_date": fields.String(10)
+    }
+
+    @marshal_with(issue_fields)
+    def get(self):
+
+        parser = reqparse.RequestParser()
+        parser.add_argument("member_id", type=int, required=False, trim=True, location='args', )
+        member_id = parser.parse_args()['member_id']
+
+        if not member_id:
+            return Issue.query.all()
+        else:
+            return Issue.query.filter_by(member_id=member_id)
+
+    @marshal_with(issue_fields)
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("member_id", type=int, required=True, trim=True, help="member_id is required")
+        parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
+        parser.add_argument("issue_date", type=str, required=True, trim=True, help="issue_date is required")
+        args = parser.parse_args()
+
+        if not Book.query.filter_by(bookID=args['book_id']).first():
+            abort(404, message="No such book")
+
+        if not Member.query.filter_by(id=args['member_id']).first():
+            abort(404, message="No such member")
+
+        issue = Issue(member_id=args.get('member_id'), book_id=args.get('book_id'), issue_date=args.get('issue_date'))
+
+        db.session.add(issue)
+        db.session.commit()
+
+        return Issue.query.all()
+
+
 api.add_resource(Books, '/api/v1/book', '/api/v1/book/', '/api/v1/book/<string:isbn>')
 api.add_resource(FetchBookList, '/api/v1/fetch/', '/api/v1/fetch')
 
 api.add_resource(Members, '/api/v1/member', '/api/v1/member/')
+
+api.add_resource(Issues, '/api/v1/issue', '/api/v1/issue/')
