@@ -75,6 +75,9 @@ class Books(Resource):
 
         args = parser.parse_args()
 
+        if Book.query.filter_by(bookID=args['bookID']).first():
+            abort(409, message="Book ID must be unique")
+
         book = Book.create_from_data(args)
 
         db.session.add(book)
