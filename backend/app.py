@@ -308,7 +308,7 @@ class Issues(Resource):
             abort(404, message="No such member")
 
         if book:
-            book_entry.update({'book_count': book.book_count + 1})
+            book_entry.update({'book_count': book.book_count - 1})
         else:
             abort(404, message="No such book")
 
