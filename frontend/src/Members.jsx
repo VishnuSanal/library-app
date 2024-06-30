@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './App.css'
 
 import {
@@ -32,6 +32,26 @@ function Members() {
 
   const [members, setMembers] = useState([]);
 
+  const nav = useNavigate();
+
+  const onIssueClick = (member) => {
+
+    fetch('https://library-app-6cyw.onrender.com/api/v1/issue', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        { 'member_id': member.id, 'book_id': book['bookID'] }
+      )
+    }).then(response => response.text())
+      .then(data => console.log(data))
+
+    sessionStorage.setItem('new_issue_item', "{}")
+
+    nav("/books");
+  }
+
   useEffect(() => {
     fetch('https://library-app-6cyw.onrender.com/api/v1/member/')
       .then((response) => {
@@ -45,19 +65,63 @@ function Members() {
       });
   }, [])
 
+  const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
+
   let content;
 
-  if (members.length > 0) {
+  if (members.length > 0 && book == {}) {
     content = members.map(member =>
       <div key={member._id}>
         <Card className="list-card m-4">
           <CardHeader>
             <CardTitle>{member.name}</CardTitle>
-            <CardDescription>Membership ID: {member._id}</CardDescription>
+            <CardDescription>Amount Due: {member.amount_due}</CardDescription>
           </CardHeader>
+          <CardContent>
+            <CardDescription>Books Issued: {member.books_issued}</CardDescription>
+            <CardDescription>Dates: {member.issue_dates}</CardDescription>
+          </CardContent>
         </Card>
       </div>
     )
+  } else if (book != {}) {
+
+    content = members.map(member =>
+
+      <Dialog key={member.id}>
+
+        <DialogTrigger className='w-full' key={member.id} >
+
+          <Card className="list-card m-4" onClick={() => { }}>
+            <CardHeader>
+              <CardTitle>{member.name}</CardTitle>
+              <CardDescription>Amount Due: {member.amount_due}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>{member.books_issued}</CardDescription>
+              <CardDescription>{member.issue_dates}</CardDescription>
+            </CardContent>
+          </Card>
+
+        </DialogTrigger>
+
+        <DialogContent className="flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Confirm</DialogTitle>
+          </DialogHeader>
+
+          <DialogDescription>Confirm issue {book['title']} to {member.name}</DialogDescription>
+
+          <DialogClose asChild >
+
+            <DialogFooter> <Button variant="ghost" type="clear">Cancel</Button> <Button type="submit" variant="ghost" onClick={() => onIssueClick(member)}>Submit</Button> </DialogFooter>
+
+          </DialogClose>
+        </DialogContent>
+      </Dialog >
+
+    )
+
   } else {
     content = <div>
       <CardDescription>Member List Empty</CardDescription>

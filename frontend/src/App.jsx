@@ -18,7 +18,7 @@ function App() {
         <CardContent>
           <>
             {
-              ['Books', 'Issues', 'Members']
+              ['Books', 'Members']
                 .map(item =>
                   <Link to={item.toLowerCase()} key={item}>
 

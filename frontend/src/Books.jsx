@@ -36,7 +36,7 @@ function Books() {
   if (books.length > 0) {
     content = books.map(book =>
       <div key={book.bookID}>
-        <Link to="new_issue" >
+        <Link to="/members" >
           <Card className="list-card m-4" onClick={() => {
             sessionStorage.setItem('new_issue_item', JSON.stringify(book))
           }}>
