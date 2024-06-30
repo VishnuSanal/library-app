@@ -52,7 +52,7 @@ function Members() {
         { 'member_id': member.id, 'book_id': book['bookID'] }
       )
     }).then(response => response.json())
-      .then(data => { setMembers(data); console.log(data) })
+      .then(data => { setMembers(data); })
 
     sessionStorage.setItem('new_issue_item', "{}")
   }
@@ -68,7 +68,7 @@ function Members() {
         { 'member_id': member.id, 'book_id': book_id }
       )
     }).then(response => response.json())
-      .then(data => { setMembers(data); console.log(data) })
+      .then(data => { setMembers(data); })
 
   }
 
@@ -127,7 +127,7 @@ function Members() {
 
                     <CardContent>
 
-                      <CardTitle>Books Issued</CardTitle>
+                      <CardDescription>Books Issued</CardDescription>
 
                       {
                         member.books_issued?.map((book_id, idx) =>

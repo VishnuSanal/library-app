@@ -15,6 +15,9 @@ import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Link } from "react-router-dom";
 import { RotatingLines } from 'react-loader-spinner';
+import { DeleteIcon, Trash } from 'lucide-react';
+import { IconButton, Text } from 'rsuite';
+import { Toaster, toast } from 'sonner';
 
 function Books() {
   const [books, setBooks] = useState([]);
@@ -22,6 +25,15 @@ function Books() {
   const [loading, setLoading] = useState(true);
 
   const [formValue, setFormValue] = useState({});
+
+  const deleteBook = (book) => {
+
+    fetch('https://library-app-6cyw.onrender.com/api/v1/book?bookID=' + book.bookID, {
+      method: 'DELETE',
+    }).then(response => response.json())
+      .then(data => { setBooks(data); })
+
+  }
 
   useEffect(() => {
     fetch('https://library-app-6cyw.onrender.com/api/v1/book/')
@@ -55,32 +67,56 @@ function Books() {
               visible={loading} />
           </div>
 
-          <div>{
+          <div>
+            {
+              (books.length >= 0) ?
+                books.map(book =>
+                  <div key={book.bookID}>
 
-            (books.length >= 0) ?
-              books.map(book =>
-                <div key={book.bookID}>
-                  <Link to="members" >
-                    <Card className="list-card m-4" onClick={() => {
-                      sessionStorage.setItem('new_issue_item', JSON.stringify(book))
-                    }}>
+                    <Card className="list-card m-4">
                       <CardHeader>
                         <CardTitle>{book.title}</CardTitle>
                         <CardDescription>{book.authors}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        Stock Left: {book.book_count}
+                        <Text className='m-4'> Stock Left: {book.book_count} </Text>
+                        <div className='flex align-middle'>
+
+                          <Link to="members" >
+                            <Button
+                              variant="ghost"
+                              className='mr-auto'
+                              onClick={() => {
+                                sessionStorage.setItem('new_issue_item', JSON.stringify(book))
+                              }}
+                            >Issue Book</Button>
+                          </Link>
+
+                          <IconButton
+                            id='delete_book_icon'
+                            onClick={() => {
+
+                              toast('Delete Book?', {
+                                action: {
+                                  label: "Conirm",
+                                  onClick: () => deleteBook(book),
+                                },
+                              })
+
+                            }}
+                            className='m-4 ml-auto'
+                            icon={<Trash />} />
+                        </div>
                       </CardContent>
                     </Card>
-                  </Link>
-                </div>
-              )
-              :
-              <div>
-                <CardDescription>Book List Empty</CardDescription>
-              </div>
 
-          }
+                  </div>
+                )
+                :
+                <div>
+                  <CardDescription>Book List Empty</CardDescription>
+                </div>
+            }
 
           </div>
         </CardContent>
@@ -126,6 +162,8 @@ function Books() {
 
             </Link>
           </Card>
+
+          <Toaster />
 
         </CardFooter >
       </Card >
