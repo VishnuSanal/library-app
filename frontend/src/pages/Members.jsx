@@ -28,6 +28,8 @@ import { Input } from "../components/ui/input";
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 import { RotatingLines } from 'react-loader-spinner';
+import { IconButton } from 'rsuite';
+import { Trash } from 'lucide-react';
 
 function Members() {
 
@@ -72,6 +74,15 @@ function Members() {
 
   }
 
+  const deleteMember = (member) => {
+
+    fetch('https://library-app-6cyw.onrender.com/api/v1/member?id=' + member.id, {
+      method: 'DELETE',
+    }).then(response => response.json())
+      .then(data => { setMembers(data); })
+
+  }
+
   useEffect(() => {
     fetch('https://library-app-6cyw.onrender.com/api/v1/member/')
       .then((response) => {
@@ -109,7 +120,7 @@ function Members() {
             (members.length > 0) ?
 
               members.map(member =>
-                <div key={member._id}>
+                <div key={member.id}>
                   <Card className="list-card m-4" onClick={(e) => {
                     if (location.pathname == "/books/members" && e.target.innerText != "Return Book")
                       toast('Issue book ' + book.title + ' to ' + member.name + '?', {
@@ -131,7 +142,7 @@ function Members() {
 
                       {
                         member.books_issued?.map((book_id, idx) =>
-                          <Card className="list-card m-4">
+                          <Card className="list-card m-4" key={book_id}>
                             <CardContent>
 
                               {/* TODO: add book name here */}
@@ -148,6 +159,23 @@ function Members() {
                       }
 
                     </CardContent>
+
+                    <CardFooter>
+                      <IconButton
+                        id='delete_book_icon'
+                        onClick={() => {
+
+                          toast('Delete Book?', {
+                            action: {
+                              label: "Conirm",
+                              onClick: () => deleteMember(member),
+                            },
+                          })
+
+                        }}
+                        className='m-4 ml-auto'
+                        icon={<Trash />} />
+                    </CardFooter>
 
                   </Card>
                 </div>
