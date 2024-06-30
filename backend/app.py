@@ -43,8 +43,6 @@ class Books(Resource):
         parser.add_argument("bookID", type=str, required=False, location='args', trim=True, help="bookID is required")
         args = parser.parse_args()
 
-        print(not args['bookID'])
-
         if args['bookID']:
             book = Book.query.filter_by(bookID=args['bookID']).first()
             if book:
@@ -305,10 +303,10 @@ class Issues(Resource):
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
         args = parser.parse_args()
 
-        member = Member.query.filter_by(id=args['member_id'])
+        member_item = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        member = member.first()
+        member = member_item.first()
         book = book_entry.first()
 
         if not member:
@@ -334,7 +332,7 @@ class Issues(Resource):
         if calculate_amount_due(member) >= 500:
             abort(409, message="A member cannot have outstanding due greater than 500")
 
-        member.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
+        member_item.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         member_list = Member.query.all()
@@ -351,10 +349,10 @@ class Issues(Resource):
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
         args = parser.parse_args()
 
-        member = Member.query.filter_by(id=args['member_id'])
+        member_entry = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        member = member.first()
+        member = member_entry.first()
         book = book_entry.first()
 
         if not member:
@@ -377,13 +375,13 @@ class Issues(Resource):
             abort(409, message="No such book issued to member")
         issue_dates.pop(idx)
 
-        member.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
+        member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         member_list = Member.query.all()
 
-        for member_entry in member_list:
-            member_entry.amount_due = calculate_amount_due(member_entry)
+        for member_item in member_list:
+            member_item.amount_due = calculate_amount_due(member_item)
 
         return member_list
 
