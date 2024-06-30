@@ -30,7 +30,7 @@ function Members() {
 
   const [members, setMembers] = useState([]);
 
-  const nav = useNavigate();
+  const [newName, setNewName] = useState("");
   const location = useLocation();
 
   const onIssueClick = (member, book) => {
@@ -115,7 +115,7 @@ function Members() {
         </Card>
       </div>
     )
-  } else if (location.pathname == "/books/members") {
+  } else if (members.length > 0  && location.pathname == "/books/members") {
 
     const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
 
@@ -187,78 +187,66 @@ function Members() {
           <div>{content}</div>
         </CardContent>
         <CardFooter>
-          < NewMemberDialog />
-        </CardFooter>
-      </Card>
-    </>
-  )
-}
 
-const NewMemberDialog = () => {
+          <Dialog>
 
-  const [formValue, setFormValue] = useState({});
+            <DialogTrigger asChild>
+              <Button variant="ghost" className="button">Add New Member</Button>
+            </DialogTrigger>
 
-  const onClick = () => {
+            <DialogContent className="flex flex-col">
 
-    fetch('https://library-app-6cyw.onrender.com/api/v1/member', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 'name': formValue['name'] })
-    }).then((data) => {
-      // setMembers(data);
-    })
-      .catch((error) => {
-        console.log(error);
-      });
+              <DialogHeader>
+                <DialogTitle>New Member</DialogTitle>
+              </DialogHeader>
 
-    setFormValue({})
-  }
+              <DialogDescription>Enter Member Details</DialogDescription>
 
-  return (
-    <Dialog>
-
-      <DialogTrigger asChild>
-        <Button variant="ghost" className="button">Add New Member</Button>
-      </DialogTrigger>
-
-      <DialogContent className="flex flex-col">
-
-        <DialogHeader>
-          <DialogTitle>New Member</DialogTitle>
-        </DialogHeader>
-
-        <DialogDescription>Enter Member Details</DialogDescription>
-        {
-          ['Name']
-            .map(currentItem =>
-              <div className="grid grid-cols-4 items-center gap-4" key={currentItem}>
-                <Label htmlFor={currentItem.toLowerCase()} className="text-right">
-                  {currentItem}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
                 </Label>
                 <Input
-                  id={currentItem.toLowerCase()}
+                  id="name"
                   defaultValue=""
                   onChange={function (e) {
-                    setFormValue({ ...formValue, [currentItem.toLowerCase()]: e.target.value })
+                    setNewName(e.target.value)
                   }}
                   className="col-span-3"
                 />
               </div>
-            )
-        }
 
-        <DialogClose asChild >
+              <DialogClose asChild >
 
-          <DialogFooter> <Button type="submit" onClick={onClick}>Search</Button> </DialogFooter>
+                <DialogFooter>
 
-        </DialogClose>
+                  <Button type="submit" onClick={() => {
 
-      </DialogContent>
+                    fetch('https://library-app-6cyw.onrender.com/api/v1/member', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ 'name': newName })
+                    }).then((response) => {
+                      return response.json();
+                    }).then((data) => {
+                      setMembers(data);
+                    })
 
-    </Dialog >
+                  }}>Search</Button>
 
+                </DialogFooter>
+
+              </DialogClose>
+
+            </DialogContent>
+
+          </Dialog >
+
+        </CardFooter>
+      </Card>
+    </>
   )
 }
 

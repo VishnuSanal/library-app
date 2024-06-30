@@ -42,6 +42,7 @@ function Books() {
       <Card>
         <CardHeader>
           <CardTitle>Book List</CardTitle>
+          <CardDescription>Click on a book to issue</CardDescription>
         </CardHeader>
         <CardContent>
 
