@@ -15,11 +15,7 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
 db.init_app(app)
 
-
-@app.before_request
-def create_tables():
-    app.before_request_funcs[None].remove(create_tables)
-
+with app.app_context():
     db.create_all()
 
 
