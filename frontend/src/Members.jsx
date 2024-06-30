@@ -35,7 +35,7 @@ function Members() {
   const nav = useNavigate();
   const location = useLocation();
 
-  const onIssueClick = (member) => {
+  const onIssueClick = (member, book) => {
 
     fetch('https://library-app-6cyw.onrender.com/api/v1/issue', {
       method: 'POST',
@@ -96,11 +96,25 @@ function Members() {
           <Card className="list-card m-4" onClick={() => { }}>
             <CardHeader>
               <CardTitle>{member.name}</CardTitle>
-              <CardDescription>Amount Due: {member.amount_due}</CardDescription>
+              <CardDescription>Total Amount Due: {member.amount_due}</CardDescription>
             </CardHeader>
             <CardContent>
-              
-              
+
+              <CardTitle>Books Issued</CardTitle>
+
+              {
+                member.books_issued?.map((book_id, idx) =>
+                  <Card className="list-card m-4">
+                    <CardContent>
+
+                      {/* TODO: add book name here */}
+                      <CardDescription>{book_id}</CardDescription>
+                      <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
+
+                    </CardContent>
+                  </Card>
+                )
+              }
 
             </CardContent>
           </Card>
@@ -116,7 +130,7 @@ function Members() {
 
           <DialogClose asChild >
 
-            <DialogFooter> <Button variant="ghost" type="clear">Cancel</Button> <Button type="submit" variant="ghost" onClick={() => onIssueClick(member)}>Submit</Button> </DialogFooter>
+            <DialogFooter> <Button variant="ghost" type="clear">Cancel</Button> <Button type="submit" variant="ghost" onClick={() => onIssueClick(member, book)}>Submit</Button> </DialogFooter>
 
           </DialogClose>
         </DialogContent>
