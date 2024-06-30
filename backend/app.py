@@ -38,6 +38,20 @@ class Books(Resource):
 
     @marshal_with(book_fields)
     def get(self):
+
+        parser = reqparse.RequestParser()
+        parser.add_argument("bookID", type=str, required=False, location='args', trim=True, help="bookID is required")
+        args = parser.parse_args()
+
+        print(not args['bookID'])
+
+        if args['bookID']:
+            book = Book.query.filter_by(bookID=args['bookID']).first()
+            if book:
+                return book
+            else:
+                abort(404, message="no such book found")
+
         return Book.query.all()
 
     @marshal_with(book_fields)
@@ -97,7 +111,7 @@ class Books(Resource):
         existing_book = Book.query.filter_by(bookID=args['bookID']).first()
 
         if not existing_book:
-            abort(400, message="No such book")
+            abort(404, message="No such book")
 
         Book.query.filter_by(bookID=args['bookID']).delete()
 
@@ -165,7 +179,7 @@ class FetchBookList(Resource):
         response = requests.get(link)
 
         if response.status_code != 200:
-            abort(500, message="Book import failed")
+            abort(500, message="Book import failed: issue with API endpoint")
 
         return response.json()['message']
 
@@ -232,7 +246,7 @@ class Members(Resource):
         member_query = Member.query.filter_by(id=args['id'])
 
         if not member_query.first():
-            abort(400, message="No such member")
+            abort(404, message="No such member")
 
         member_query.update({'name': args['name']})
 
@@ -309,7 +323,7 @@ class Issues(Resource):
         if books_issued is None:
             books_issued = []
         elif book.bookID in books_issued:
-            abort(400, message="Book already issued to member")
+            abort(409, message="Book already issued to member")
         books_issued.append(book.bookID)
 
         issue_dates = member.issue_dates
@@ -353,14 +367,14 @@ class Issues(Resource):
 
         books_issued = member.books_issued
         if not books_issued or book.bookID not in books_issued:
-            abort(400, message="No such book issued to member")
+            abort(409, message="No such book issued to member")
 
         idx = books_issued.index(book.bookID)
         books_issued.remove(book.bookID)
 
         issue_dates = member.issue_dates
         if not issue_dates:
-            abort(400, message="No such book issued to member")
+            abort(409, message="No such book issued to member")
         issue_dates.pop(idx)
 
         member.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
