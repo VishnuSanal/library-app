@@ -52,7 +52,8 @@ class Books(Resource):
         parser.add_argument("isbn13", help="isbn13 is required", type=str, required=True, trim=True)
         parser.add_argument("language_code", help="language_code is required", type=str, required=True, trim=True)
         parser.add_argument("ratings_count", help="ratings_count is required", type=str, required=True, trim=True)
-        parser.add_argument("text_reviews_count", help="text_reviews_count is required", type=str, required=True, trim=True)
+        parser.add_argument("text_reviews_count", help="text_reviews_count is required", type=str, required=True,
+                            trim=True)
         parser.add_argument("publication_date", help="publication_date is required", type=str, required=True, trim=True)
         parser.add_argument("publisher", help="publisher is required", type=str, required=True, trim=True)
         parser.add_argument("book_count", help="book_count is required", type=str, required=False, trim=True)
@@ -239,16 +240,8 @@ class Members(Resource):
 
         member_list = Member.query.all()
 
-        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
-
-        for entry in member_list:
-            amount_due = 0
-
-            for date in entry.issue_dates:
-                issue_date = dateutil.parser.parse(date)
-                amount_due += (today - issue_date).days * 10
-
-            entry.amount_due = amount_due
+        for member_entry in member_list:
+            member_entry.amount_due = calculate_amount_due(member_entry)
 
         return member_list
 
@@ -264,18 +257,22 @@ class Members(Resource):
 
         member_list = Member.query.all()
 
-        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
-
-        for entry in member_list:
-            amount_due = 0
-
-            for date in entry.issue_dates:
-                issue_date = dateutil.parser.parse(date)
-                amount_due += (today - issue_date).days * 10
-
-            entry.amount_due = amount_due
+        for member_entry in member_list:
+            member_entry.amount_due = calculate_amount_due(member_entry)
 
         return member_list
+
+
+def calculate_amount_due(member):
+    today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
+
+    amount_due = 0
+
+    for date in member.issue_dates:
+        issue_date = dateutil.parser.parse(date)
+        amount_due += (today - issue_date).days * 10
+
+    return amount_due
 
 
 class Issues(Resource):
@@ -294,10 +291,10 @@ class Issues(Resource):
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
         args = parser.parse_args()
 
-        member_entry = Member.query.filter_by(id=args['member_id'])
+        member = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        member = member_entry.first()
+        member = member.first()
         book = book_entry.first()
 
         if not member:
@@ -320,21 +317,16 @@ class Issues(Resource):
             issue_dates = []
         issue_dates.append(datetime.today().strftime('%d/%m/%Y'))
 
-        member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
+        if calculate_amount_due(member) >= 500:
+            abort(409, message="A member cannot have outstanding due greater than 500")
+
+        member.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         member_list = Member.query.all()
 
-        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
-
-        for entry in member_list:
-            amount_due = 0
-
-            for date in entry.issue_dates:
-                issue_date = dateutil.parser.parse(date)
-                amount_due += (today - issue_date).days * 10
-
-            entry.amount_due = amount_due
+        for member_entry in member_list:
+            member_entry.amount_due = calculate_amount_due(member_entry)
 
         return member_list
 
@@ -345,10 +337,10 @@ class Issues(Resource):
         parser.add_argument("book_id", type=int, required=True, trim=True, help="book_id is required")
         args = parser.parse_args()
 
-        member_entry = Member.query.filter_by(id=args['member_id'])
+        member = Member.query.filter_by(id=args['member_id'])
         book_entry = Book.query.filter_by(bookID=args['book_id'])
 
-        member = member_entry.first()
+        member = member.first()
         book = book_entry.first()
 
         if not member:
@@ -371,21 +363,13 @@ class Issues(Resource):
             abort(400, message="No such book issued to member")
         issue_dates.pop(idx)
 
-        member_entry.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
+        member.update(({'books_issued': books_issued, 'issue_dates': issue_dates}))
         db.session.commit()
 
         member_list = Member.query.all()
 
-        today = dateutil.parser.parse(datetime.today().strftime('%d/%m/%Y'))
-
-        for entry in member_list:
-            amount_due = 0
-
-            for date in entry.issue_dates:
-                issue_date = dateutil.parser.parse(date)
-                amount_due += (today - issue_date).days * 10
-
-            entry.amount_due = amount_due
+        for member_entry in member_list:
+            member_entry.amount_due = calculate_amount_due(member_entry)
 
         return member_list
 
