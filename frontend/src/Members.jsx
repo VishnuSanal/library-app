@@ -45,12 +45,25 @@ function Members() {
       body: JSON.stringify(
         { 'member_id': member.id, 'book_id': book['bookID'] }
       )
-    }).then(response => response.text())
-      .then(data => console.log(data))
+    }).then(response => response.json())
+      .then(data => { setMembers(data); console.log(data) })
 
     sessionStorage.setItem('new_issue_item', "{}")
+  }
 
-    nav("/books");
+  const onReturnClick = (member, book_id) => {
+
+    fetch('https://library-app-6cyw.onrender.com/api/v1/issue', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        { 'member_id': member.id, 'book_id': book_id }
+      )
+    }).then(response => response.json())
+      .then(data => { setMembers(data); console.log(data) })
+
   }
 
   useEffect(() => {
@@ -76,10 +89,31 @@ function Members() {
             <CardTitle>{member.name}</CardTitle>
             <CardDescription>Amount Due: {member.amount_due}</CardDescription>
           </CardHeader>
+
           <CardContent>
-            <CardDescription>Books Issued: {member.books_issued}</CardDescription>
-            <CardDescription>Dates: {member.issue_dates}</CardDescription>
+
+            <CardTitle>Books Issued</CardTitle>
+
+            {
+              member.books_issued?.map((book_id, idx) =>
+                <Card className="list-card m-4">
+                  <CardContent>
+
+                    {/* TODO: add book name here */}
+                    <CardDescription>{book_id}</CardDescription>
+                    <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
+
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button type="submit" variant="ghost" onClick={() => onReturnClick(member, book_id)}>Return Book</Button>
+                  </CardFooter>
+                </Card>
+              )
+            }
+
           </CardContent>
+
         </Card>
       </div>
     )
@@ -112,6 +146,7 @@ function Members() {
                       <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
 
                     </CardContent>
+
                   </Card>
                 )
               }
