@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import './App.css'
+import '../App.css'
 
 import {
   Card,
@@ -21,12 +21,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import './App.css'
-
 import { useEffect, useState } from 'react';
-import { Button } from './components/ui/button';
-import { Label } from "./components/ui/label";
-import { Input } from "./components/ui/input";
+import { Button } from '../components/ui/button';
+import { Label } from "../components/ui/label";
+import { Input } from "../components/ui/input";
 
 function Members() {
 

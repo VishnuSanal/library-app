@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import Books from './Books.jsx';
-import Members from './Members.jsx';
-import Search from './Search.jsx';
+import Books from './pages/Books.jsx';
+import Members from './pages/Members.jsx';
+import Search from './pages/Search.jsx';
 
 const router = createBrowserRouter([
   {

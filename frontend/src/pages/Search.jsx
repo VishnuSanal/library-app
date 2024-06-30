@@ -1,4 +1,4 @@
-import './App.css'
+import '../App.css'
 
 import {
   Card,
@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card"
 
 import { useEffect, useState } from 'react';
-import { Button } from './components/ui/button';
-import { Label } from "./components/ui/label";
-import { Input } from "./components/ui/input";
+import { Button } from '../components/ui/button';
+import { Label } from "../components/ui/label";
+import { Input } from "../components/ui/input";
 import { useNavigate } from "react-router-dom";
 
 function Search() {
