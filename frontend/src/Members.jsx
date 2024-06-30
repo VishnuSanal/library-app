@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './App.css'
 
 import {
@@ -33,6 +33,7 @@ function Members() {
   const [members, setMembers] = useState([]);
 
   const nav = useNavigate();
+  const location = useLocation();
 
   const onIssueClick = (member) => {
 
@@ -65,11 +66,9 @@ function Members() {
       });
   }, [])
 
-  const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
-
   let content;
 
-  if (members.length > 0 && book == {}) {
+  if (members.length > 0 && location.pathname == "/members") {
     content = members.map(member =>
       <div key={member._id}>
         <Card className="list-card m-4">
@@ -84,7 +83,9 @@ function Members() {
         </Card>
       </div>
     )
-  } else if (book != {}) {
+  } else if (location.pathname == "/books/members") {
+
+    const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
 
     content = members.map(member =>
 
@@ -98,8 +99,9 @@ function Members() {
               <CardDescription>Amount Due: {member.amount_due}</CardDescription>
             </CardHeader>
             <CardContent>
-              <CardDescription>{member.books_issued}</CardDescription>
-              <CardDescription>{member.issue_dates}</CardDescription>
+              
+              
+
             </CardContent>
           </Card>
 
