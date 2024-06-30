@@ -263,7 +263,17 @@ class Members(Resource):
         parser.add_argument("id", type=str, required=True, location='args', trim=True, help="id is required")
         args = parser.parse_args()
 
-        Member.query.filter_by(id=args['id']).delete()
+        member_entry = Member.query.filter_by(id=args['id'])
+        
+        member = member_entry.first()
+        
+        if member and member.books_issued:
+            for book_id in member.books_issued:
+                book_entry = Book.query.filter_by(bookID=book_id)
+
+                book_entry.update({'book_count': book_entry.first().book_count + 1})
+
+        member_entry.delete()
 
         db.session.commit()
 
@@ -311,6 +321,9 @@ class Issues(Resource):
 
         if not member:
             abort(404, message="No such member")
+
+        if book.book_count <= 0:
+            abort(409, message="Book stock equals zero")
 
         if book:
             book_entry.update({'book_count': book.book_count - 1})

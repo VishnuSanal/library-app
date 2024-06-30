@@ -11,3 +11,5 @@ curl 127.0.0.1:5000/api/v1/issue -X POST -H "Content-Type: application/json" --d
 curl 127.0.0.1:5000/api/v1/book -X PUT -H "Content-Type: application/json" --data '{"bookID": "41909", "title": "Harry Potter Yo!!"}'
 
 curl 127.0.0.1:5000/api/v1/member -X PUT -H "Content-Type: application/json" --data '{"id": "1", "name": "Arun"}'
+
+curl 127.0.0.1:5000/api/v1/member?id=1 -X DELETE
