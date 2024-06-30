@@ -42,6 +42,7 @@ function Books() {
       })
       .then((data) => {
         setLoading(false)
+        localStorage.setItem('book_list', JSON.stringify(data))
         setBooks(data);
       })
       .catch((error) => {

@@ -121,16 +121,7 @@ function Members() {
 
               members.map(member =>
                 <div key={member.id}>
-                  <Card className="list-card m-4" onClick={(e) => {
-                    if (location.pathname == "/books/members" && e.target.innerText != "Return Book")
-                      toast('Issue book ' + book.title + ' to ' + member.name + '?', {
-                        action: {
-                          label: "Conirm",
-                          onClick: () => onIssueClick(member, book),
-                        },
-                      })
-
-                  }}>
+                  <Card className="list-card m-4">
                     <CardHeader>
                       <CardTitle>{member.name}</CardTitle>
                       <CardDescription>Amount Due: {member.amount_due}</CardDescription>
@@ -145,15 +136,34 @@ function Members() {
                           <Card className="list-card m-4" key={book_id}>
                             <CardContent>
 
-                              {/* TODO: add book name here */}
-                              <CardDescription>{book_id}</CardDescription>
-                              <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
+                              <div className='flex'>
 
+                                <div>
+                                  <CardTitle className="text-lg">
+                                    {JSON.parse(localStorage.getItem('book_list'))
+                                      .find(book => book.bookID == book_id).title}
+                                  </CardTitle>
+                                  <CardDescription>Issued: {member.issue_dates[idx]}</CardDescription>
+                                </div>
+
+                                <IconButton
+                                  id='delete_book_icon'
+                                  onClick={() => {
+
+                                    toast('Return Book?', {
+                                      action: {
+                                        label: "Conirm",
+                                        onClick: () => onReturnClick(member, book_id),
+                                      },
+                                    })
+
+                                  }}
+                                  className='m-4 ml-auto'
+                                  icon={<Trash />} />
+
+                              </div>
                             </CardContent>
 
-                            <CardFooter>
-                              <Button type="submit" variant="ghost" onClick={() => onReturnClick(member, book_id)}>Return Book</Button>
-                            </CardFooter>
                           </Card>
                         )
                       }
@@ -161,6 +171,22 @@ function Members() {
                     </CardContent>
 
                     <CardFooter>
+
+                      {(location.pathname == "/books/members") && <Button
+                        className='m-4 mr-auto'
+                        onClick={(e) => {
+
+                          toast('Issue book ' + book.title + ' to ' + member.name + '?', {
+                            action: {
+                              label: "Conirm",
+                              onClick: () => onIssueClick(member, book),
+                            },
+                          })
+                        }}>
+                        Issue
+                      </Button>
+                      }
+
                       <IconButton
                         id='delete_book_icon'
                         onClick={() => {
@@ -187,7 +213,7 @@ function Members() {
 
 
           }</div>
-        </CardContent>
+        </CardContent >
         <CardFooter>
 
           <Dialog>
@@ -249,7 +275,7 @@ function Members() {
           <Toaster />
 
         </CardFooter>
-      </Card>
+      </Card >
     </>
   )
 }
