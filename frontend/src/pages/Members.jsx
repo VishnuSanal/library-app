@@ -25,13 +25,21 @@ import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+import { RotatingLines } from 'react-loader-spinner';
 
 function Members() {
 
   const [members, setMembers] = useState([]);
 
   const [newName, setNewName] = useState("");
+
+  const [loading, setLoading] = useState(true);
+
   const location = useLocation();
+
+  const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
 
   const onIssueClick = (member, book) => {
 
@@ -71,120 +79,86 @@ function Members() {
       })
       .then((data) => {
         setMembers(data);
+        setLoading(false)
       })
       .catch((error) => {
         console.log(error);
       });
   }, [])
 
-  let content;
-
-  if (members.length > 0 && location.pathname == "/members") {
-    content = members.map(member =>
-      <div key={member._id}>
-        <Card className="list-card m-4">
-          <CardHeader>
-            <CardTitle>{member.name}</CardTitle>
-            <CardDescription>Amount Due: {member.amount_due}</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-
-            <CardTitle>Books Issued</CardTitle>
-
-            {
-              member.books_issued?.map((book_id, idx) =>
-                <Card className="list-card m-4">
-                  <CardContent>
-
-                    {/* TODO: add book name here */}
-                    <CardDescription>{book_id}</CardDescription>
-                    <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
-
-                  </CardContent>
-
-                  <CardFooter>
-                    <Button type="submit" variant="ghost" onClick={() => onReturnClick(member, book_id)}>Return Book</Button>
-                  </CardFooter>
-                </Card>
-              )
-            }
-
-          </CardContent>
-
-        </Card>
-      </div>
-    )
-  } else if (members.length > 0  && location.pathname == "/books/members") {
-
-    const book = JSON.parse(sessionStorage.getItem('new_issue_item'))
-
-    content = members.map(member =>
-
-      <Dialog key={member.id}>
-
-        <DialogTrigger className='w-full' key={member.id} >
-
-          <Card className="list-card m-4" onClick={() => { }}>
-            <CardHeader>
-              <CardTitle>{member.name}</CardTitle>
-              <CardDescription>Total Amount Due: {member.amount_due}</CardDescription>
-            </CardHeader>
-            <CardContent>
-
-              <CardTitle>Books Issued</CardTitle>
-
-              {
-                member.books_issued?.map((book_id, idx) =>
-                  <Card className="list-card m-4">
-                    <CardContent>
-
-                      {/* TODO: add book name here */}
-                      <CardDescription>{book_id}</CardDescription>
-                      <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
-
-                    </CardContent>
-
-                  </Card>
-                )
-              }
-
-            </CardContent>
-          </Card>
-
-        </DialogTrigger>
-
-        <DialogContent className="flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Confirm</DialogTitle>
-          </DialogHeader>
-
-          <DialogDescription>Confirm issue {book['title']} to {member.name}</DialogDescription>
-
-          <DialogClose asChild >
-
-            <DialogFooter> <Button variant="ghost" type="clear">Cancel</Button> <Button type="submit" variant="ghost" onClick={() => onIssueClick(member, book)}>Submit</Button> </DialogFooter>
-
-          </DialogClose>
-        </DialogContent>
-      </Dialog >
-
-    )
-
-  } else {
-    content = <div>
-      <CardDescription>Member List Empty</CardDescription>
-    </div>
-  }
-
   return (
     <>
       <Card>
         <CardHeader>
           <CardTitle>Member List</CardTitle>
+          <CardDescription>Click on a member to issue</CardDescription>
         </CardHeader>
         <CardContent>
-          <div>{content}</div>
+
+          <div className='flex justify-center'>
+            <RotatingLines
+              strokeColor="grey"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="48"
+              visible={loading} />
+          </div>
+
+          <div>{
+
+            (members.length > 0) ?
+
+              members.map(member =>
+                <div key={member._id}>
+                  <Card className="list-card m-4" onClick={(e) => {
+                    if (location.pathname == "/books/members" && e.target.innerText != "Return Book")
+                      toast('Issue book ' + book.title + ' to ' + member.name + '?', {
+                        action: {
+                          label: "Conirm",
+                          onClick: () => onIssueClick(member, book),
+                        },
+                      })
+
+                  }}>
+                    <CardHeader>
+                      <CardTitle>{member.name}</CardTitle>
+                      <CardDescription>Amount Due: {member.amount_due}</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+
+                      <CardTitle>Books Issued</CardTitle>
+
+                      {
+                        member.books_issued?.map((book_id, idx) =>
+                          <Card className="list-card m-4">
+                            <CardContent>
+
+                              {/* TODO: add book name here */}
+                              <CardDescription>{book_id}</CardDescription>
+                              <CardDescription>Issue Date: {member.issue_dates[idx]}</CardDescription>
+
+                            </CardContent>
+
+                            <CardFooter>
+                              <Button type="submit" variant="ghost" onClick={() => onReturnClick(member, book_id)}>Return Book</Button>
+                            </CardFooter>
+                          </Card>
+                        )
+                      }
+
+                    </CardContent>
+
+                  </Card>
+                </div>
+              )
+              :
+              <div>
+                <CardDescription>Member List Empty</CardDescription>
+              </div>
+
+
+          }</div>
         </CardContent>
         <CardFooter>
 
@@ -243,6 +217,8 @@ function Members() {
             </DialogContent>
 
           </Dialog >
+
+          <Toaster />
 
         </CardFooter>
       </Card>
