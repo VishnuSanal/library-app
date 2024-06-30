@@ -14,9 +14,14 @@ import { Button } from './components/ui/button';
 import { Label } from "./components/ui/label";
 import { Input } from "./components/ui/input";
 import { Link } from "react-router-dom";
+import { RotatingLines } from 'react-loader-spinner';
 
 function Books() {
   const [books, setBooks] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [formValue, setFormValue] = useState({});
 
   useEffect(() => {
     fetch('https://library-app-6cyw.onrender.com/api/v1/book/')
@@ -24,40 +29,13 @@ function Books() {
         return response.json();
       })
       .then((data) => {
+        setLoading(false)
         setBooks(data);
       })
       .catch((error) => {
         console.log(error);
       });
-  }, [])
-
-  let content;
-
-  if (books.length > 0) {
-    content = books.map(book =>
-      <div key={book.bookID}>
-        <Link to="members" >
-          <Card className="list-card m-4" onClick={() => {
-            sessionStorage.setItem('new_issue_item', JSON.stringify(book))
-          }}>
-            <CardHeader>
-              <CardTitle>{book.title}</CardTitle>
-              <CardDescription>{book.authors}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              Stock Left: {book.book_count}
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-    )
-  } else {
-    content = <div>
-      <CardDescription>Book List Empty</CardDescription>
-    </div>
-  }
-
-  const [formValue, setFormValue] = useState({});
+  }, [loading])
 
   return (
     <>
@@ -66,7 +44,44 @@ function Books() {
           <CardTitle>Book List</CardTitle>
         </CardHeader>
         <CardContent>
-          <div>{content}</div>
+
+          <div className='flex justify-center'>
+            <RotatingLines
+              strokeColor="grey"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="48"
+              visible={loading} />
+          </div>
+
+          <div>{
+
+            (books.length >= 0) ?
+              books.map(book =>
+                <div key={book.bookID}>
+                  <Link to="members" >
+                    <Card className="list-card m-4" onClick={() => {
+                      sessionStorage.setItem('new_issue_item', JSON.stringify(book))
+                    }}>
+                      <CardHeader>
+                        <CardTitle>{book.title}</CardTitle>
+                        <CardDescription>{book.authors}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        Stock Left: {book.book_count}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              )
+              :
+              <div>
+                <CardDescription>Book List Empty</CardDescription>
+              </div>
+
+          }
+
+          </div>
         </CardContent>
         <CardFooter className="flex items-center justify-center w-full">
 

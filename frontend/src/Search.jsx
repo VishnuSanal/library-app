@@ -98,7 +98,7 @@ function Search() {
 
     setUploadItems([])
 
-    nav("/books");
+    nav(-1);
   }
 
   return (

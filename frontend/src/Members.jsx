@@ -208,8 +208,12 @@ const NewMemberDialog = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 'name': formValue['name'] })
-    }).then(response => response.text())
-      .then(data => console.log(data))
+    }).then((data) => {
+      // setMembers(data);
+    })
+      .catch((error) => {
+        console.log(error);
+      });
 
     setFormValue({})
   }
